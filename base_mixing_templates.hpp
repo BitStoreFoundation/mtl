@@ -7,6 +7,70 @@
 
 namespace tvd {
 
+template<class ... _MixingTy>
+    struct add_mixing : public _MixingTy ... { };
+
+template<class _DerivedTy>
+    struct access { };
+// mixing for container class
+template<
+    class _DerivedTy,
+    class _ElemContainerTy>
+    class add_iterators
+    {
+public :
+    using derived_t  = _DerivedTy;
+    using iterator_t = typename _ElemContainerTy::container_t::iterator;
+private :
+    derived_t *derived_;
+public :
+    add_base_methods()
+        : derived_(static_cast<derived_t*>(this))
+        {
+        }
+    
+    iterator_t begin() {
+        return iterator_t( derived_->data() );
+        }
+
+    iterator_t end() {
+        return iterator_t( derived_->data() + access::size<_DerivedTy>(derived_) );
+        }
+    };
+
+template<
+    class _DerivedTy,
+    class _ElemContainerTy>
+    class add_const_iterators
+    {
+public :
+    using derived_t        = _DerivedTy;
+    using const_iterator_t = typename _ElemContainerTy::container_t::const_iterator;
+private :
+    derived_t *derived_;
+public :
+    add_base_methods()
+        : derived_(static_cast<derived_t*>(this))
+        {
+        }
+    
+    const_iterator_t begin() const {
+        return const_iterator_t( derived_->data() );
+        }
+
+    const_iterator_t end() const {
+        return const_iterator_t( derived_->data() + access<_DerivedTy>::size(derived_) );
+        }
+
+    const_iterator_t cbegin() const {
+        return begin();
+        }
+
+    const_iterator_t cend() const {
+        return end();
+        }
+    };
+
 template<
     class _DerivedTy,
     class _AnyTy = _DerivedTy>

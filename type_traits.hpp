@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 namespace tvd {
-// метафункция для проверки типов строк
+
 template<class _UnusedTy = void>
 	struct is_string : std::false_type { };
-// специализация шаблона для стандартных строк
+
 template<>
 	struct is_string<std::string> : std::true_type { };
 
@@ -19,18 +19,18 @@ template<
 	typename _RefTy = _Ty&>
 	struct elem_traits
 	{
-	typedef _Ty    type_t;
-	typedef _PtrTy pointer_t;
-	typedef _RefTy reference_t;
+	typedef _Ty         type_t;
+	typedef _PtrTy      pointer_t;
+	typedef _RefTy      reference_t;
 	};
-// тип контейнера
+
 template<class _ElemTraitsTy>
 	struct elem_container
     {
 	typedef _ElemTraitsTy                               elem_traits_t;
 	typedef std::vector<typename elem_traits_t::type_t> container_t;
 	};
-// шаблонные переменные
+
 template<typename>
 	inline constexpr bool false_v = std::false_type::value;
 
@@ -39,7 +39,7 @@ template<typename>
 
 template<class _Ty>
 	inline constexpr bool is_string_v = is_string<_Ty>::value;
-// шаблонные псевдонимы для SFINAE
+
 template<typename _Ty>
     using is_arithmetic_t = std::enable_if_t<std::is_arithmetic_v<_Ty>, bool>;
 
@@ -58,17 +58,5 @@ template<typename _Ty>
 template<typename _FstTy,
 	typename _SecTy>
 	using is_base_of_t = std::enable_if_t<std::is_base_of_v<_FstTy, _SecTy>, bool>;
-// шаблонные псевдонимы - обертки
-template<typename _Ty>
-	using ref_t = _Ty&;
-
-template<typename _Ty>
-    using const_ref_t = _Ty const&;
-
-template<typename _Ty>
-    using rv_ref_t = _Ty&&;
-
-template<typename _Ty>
-	using ptr_t = _Ty*;
 }
 #endif

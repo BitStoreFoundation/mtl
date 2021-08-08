@@ -10,87 +10,59 @@
 #include <array>
 
 namespace tvd {
-// mixing for container class
+
 template<
-    class _DerivedTy,
-    class _ElemContainerTy>
-    class add_base_methods
+    typename _Ty = float,
+    size_t col_size = 3,
+    class _ElemTraitsTy = elem_traits<_Ty> >
+    class matrix;
+
+template<
+    typename _Ty,
+    size_t size>
+    struct access<matrix<_Ty, size> > 
     {
-public :
-    using derived_t        = _DerivedTy;
-    using type_t           = typename _ElemContainerTy::elem_traits_t::type_t;
-    using pointer_t        = typename _ElemContainerTy::elem_traits_t::pointer_t;
-    using iterator_t       = typename _ElemContainerTy::container_t::iterator;
-    using const_iterator_t = typename _ElemContainerTy::container_t::const_iterator;
-private :
-    derived_t *derived_;
-public :
-    add_base_methods()
-        : derived_(static_cast<derived_t*>(this))
-        {
-        }
-    // begin/end
-    const_iterator_t cbegin() const {
-        return derived_->container_.cbegin();
-        }
-
-    const_iterator_t cend() const {
-        return derived_->container_.cend();
-        }
-
-    const_iterator_t begin() const {
-        return derived_->container_.begin();
-        }
-
-    const_iterator_t end() const {
-        return derived_->container_.end();
-        }
-
-    iterator_t begin() {
-        return derived_->container_.begin();
-        }
-
-    iterator_t end() {
-        return derived_->container_.end();
-        }
-
-    pointer_t data() const {
-        return derived_->container_.data();
+    static size_t size(_DerivedTy *impl) const noexcept {
+        return impl->container_.size();
         }
     };
+
+template<
+    class _MatrixTy, 
+    class _ElemTraitsTy>
+    using mtx_mixing_t = add_mixing<
+        add_iterators<_MatrixTy, elem_container<_ElemTraitsTy>,
+        add_const_iterators<_MatrixTy, elem_container<_ElemTraitsTy> >,
+        add_non_equalable<_MatrixTy>,
+        add_sum<_MatrixTy>, 
+        add_difference<_MatrixTy>,
+        add_division_by_value<_MatrixTy, _ElemTraitsTy>
+    >;
 
 template<
     typename _Ty,
     size_t,
     class = elem_traits<typename std::remove_pointer<_Ty>::type> >
     class vector;
-
-template<
-    class _MatrixTy,
-    class _ElemTraitsTy>
-    class matrix_mixing
-        : public add_base_methods<_MatrixTy, elem_container<_ElemTraitsTy> >
-        , public add_non_equalable<_MatrixTy>
-        , public add_sum<_MatrixTy>
-        , public add_difference<_MatrixTy>
-        , public add_division_by_value<_MatrixTy, _ElemTraitsTy> { };
 // matrix container
 template<
-    typename _Ty = float,
-    size_t col_size = 3,
-    class _ElemTraitsTy = elem_traits<_Ty> >
-    class matrix final
-        : public matrix_mixing<matrix<_Ty, col_size>, _ElemTraitsTy>
+    typename _Ty,
+    size_t col_size,
+    class _ElemTraitsTy>
+    class matrix final : public mtx_mixing_t<matrix<_Ty, col_size>, _ElemTraitsTy>
     {
     static_assert(!std::is_pointer_v<_Ty>, "tvd::matrix<_Ty, size_t> : no specialization of class for pointer");
-    friend class add_base_methods<matrix<_Ty, col_size>, elem_container<_ElemTraitsTy> >;
+    friend class access<matrix<_Ty, col_size> >;
     friend class vector<_Ty*, col_size>;
 public :
     using add_multiplying_by_value<matrix<_Ty, col_size>, _ElemTraitsTy>::operator*;
-    using ptrs_vector_t = vector<_Ty*, col_size>;
-    using vector_t      = vector<_Ty, col_size>;
-    using type_t        = typename _ElemTraitsTy::type_t;
-    using pointer_t     = typename _ElemTraitsTy::pointer_t;
+    using ptrs_vector_t    = vector<_Ty*, col_size>;
+    using vector_t         = vector<_Ty, col_size>;
+    using type_t           = typename _ElemTraitsTy::type_t;
+    using pointer_t        = typename _ElemTraitsTy::pointer_t;
+    using const_pointer_t  = const type_t*;
+    using iterator_t       = typename elem_container<_ElemTraitsTy>::iterator;
+    using const_iterator_t = typename elem_container<_ElemTraitsTy>::const_iterator;
     template<typename Ty = _Ty>
         using init_list_t = std::initializer_list<Ty> const&;
 private :
@@ -109,13 +81,13 @@ public :
         }
 
     explicit matrix(size_t const & size)
-        : matrix_mixing<matrix<_Ty, col_size>, _ElemTraitsTy>()
+        : mtx_mixing_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_(size*col_size)
         {
         }
 
     matrix(init_list_t<> list)
-        : matrix_mixing<matrix<_Ty, col_size>, _ElemTraitsTy>()
+        : mtx_mixing_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_(list.size())
         {
         if(col_size > list.size() || list.size()%col_size != 0) {
@@ -125,7 +97,7 @@ public :
         }
 
     matrix(init_list_t<vector_t> list)
-        : matrix_mixing<matrix<_Ty, col_size>, _ElemTraitsTy>()
+        : mtx_mixing_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_(list.size())
         {
         if(col_size > list.size() || list.size()%col_size != 0) {
@@ -141,6 +113,13 @@ public :
         for(size_t i = 0; i < container_.size(); i++)
             container_[i] = array[i];
         delete array;
+        }
+    pointer_t data() noexcept {
+        return container_.data();
+        }
+
+    const_pointer_t data() const noexcept {
+        return container_.data();
         }
 
     size_t size() const noexcept {
@@ -235,7 +214,7 @@ public :
             for(size_t i = 0; i < size(); i++)
                 m[i][0] = other[i];
             return *this*m;
-            } /**/
+            }
 
     matrix & operator = (matrix const & other) {
         if(this == &other) return *this;
@@ -307,37 +286,39 @@ template<
     typename _Ty,
     size_t size,
     class _ElemTraitsTy>
-    class vector_mixing
-        : public add_base_methods<vector<_Ty, size>, elem_container<elem_traits<_Ty> > >
-        , public add_non_equalable<vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >
-        , public add_non_equalable<vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >
-        , public add_sum<vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >
-        , public add_sum<vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >
-        , public add_difference<vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >
-        , public add_difference<vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >
-        , public add_division_by_value<vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::type_t, size> >
-        {
-        };
+    using vec_mixing_t = add_mixing<
+        add_iterators<vector<_Ty, size>, elem_container<elem_traits<_Ty> > >,
+        add_const_iterators<vector<_Ty, size>, elem_container<elem_traits<_Ty> > >,
+        add_non_equalable<vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+        add_non_equalable<vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
+        add_sum<vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+        add_sum<vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
+        add_difference<vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+        add_difference<vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
+        add_division_by_value<vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::type_t, size> >
+    >;
+
 // vector container
 template<
     typename _Ty,
     size_t col_size,
     class _ElemTraitsTy>
-    class vector final
-        : public vector_mixing<_Ty, col_size, _ElemTraitsTy>
+    class vector final : public vec_mixing_t<_Ty, col_size, _ElemTraitsTy>
     {
-    friend class add_base_methods<vector<_Ty, col_size>, elem_container<elem_traits<_Ty> > >;
 public : // definitions
-    using type_t      = typename _ElemTraitsTy::type_t;
-    using pointer_t   = typename _ElemTraitsTy::pointer_t;
-    using reference_t = typename _ElemTraitsTy::reference_t;
-    using init_list_t = std::initializer_list<_Ty> const&;
+    using type_t           = typename _ElemTraitsTy::type_t;
+    using pointer_t        = typename _ElemTraitsTy::pointer_t;
+    using const_pointer_t  = const type_t*;
+    using reference_t      = typename _ElemTraitsTy::reference_t;
+    using init_list_t      = std::initializer_list<_Ty> const&;
+    using iterator_t       = typename elem_container<_ElemTraitsTy>::iterator;
+    using const_iterator_t = typename elem_container<_ElemTraitsTy>::const_iterator;
 private :
     std::vector<_Ty> container_;
 public :
 
     vector()
-        : vector_mixing<_Ty, col_size, _ElemTraitsTy>()
+        : vec_mixing_t<_Ty, col_size, _ElemTraitsTy>()
         , container_(col_size)
         {
         }
@@ -387,6 +368,14 @@ public :
         size_t j(0);
         for(auto const & col : list)
             container_[j++] = col;
+        }
+
+    pointer_t data() noexcept {
+        return container_.data();
+        }
+
+    const_pointer_t data() const noexcept {
+        return container_.data();
         }
 
     size_t size() const noexcept {

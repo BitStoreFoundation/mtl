@@ -11,10 +11,7 @@ template<
     class _IdTy,
     class _UnusedTy>
     class abstract_factory { };
-/*
-    *–егиструет классы и
-    *производит экземпл€ры по id
-*/
+
 template<
     class _IdTy,
     class _BaseTy,
@@ -39,7 +36,7 @@ public :
             hash_tbl_.insert(pair);
         }
 
-    void registerClass(id_t const & id, creator_t const & create) {
+    void registerClass(id_t const& id, creator_t const& create) {
         if(!create) {
             throw EXCEPTION("abstract_factory : creator_t = null");
             }
@@ -47,11 +44,11 @@ public :
         if(it != hash_tbl_.end()) {
             throw EXCEPTION("abstract_factory : id already exsist");
             }
-        hash_tbl_.emplace(id, std::move(create));
+        hash_tbl_.emplace(id, create);
         }
 
     template<class _DerivedTy>
-        void registerClass(id_t const & id) {
+        void registerClass(id_t const& id) {
             auto it = hash_tbl_.find(id);
             if(it != hash_tbl_.end()) {
                 throw EXCEPTION("abstract_factory : id already exsist");
@@ -59,11 +56,10 @@ public :
             hash_tbl_.emplace(id, &create<_DerivedTy>);
             }
 
-    base_ptr_t create(id_t const & id, _ArgsTy ... args) {
+    base_ptr_t get_object(id_t const& id, _ArgsTy const& ... args) {
         auto it = hash_tbl_.find(id);
         return it != hash_tbl_.end() ? it->second(args ...) : nullptr;
         }
-
 private :
 
     template<class _DerivedTy>
