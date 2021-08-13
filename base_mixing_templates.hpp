@@ -7,68 +7,86 @@
 
 namespace tvd {
 
-template<class ... _MixingTy>
-    struct add_mixing : public _MixingTy ... { };
+template<class ... _ArgsTy>
+	struct mixing_list : public _ArgsTy ... { };
+
+template<class _ElemContainerTy>
+	struct access
+	{
+	using container_t = typename _ElemContainerTy::container_t;
 
 template<class _DerivedTy>
-    struct access { };
+	static container_t& get_container(_DerivedTy *impl) {
+		return impl->container_;
+		}
+	};
 // mixing for container class
 template<
-    class _DerivedTy,
-    class _ElemContainerTy>
-    class add_iterators
-    {
+	class _DerivedTy,
+	class _ElemContainerTy>
+	class add_base_iterators
+	{
 public :
-    using derived_t  = _DerivedTy;
-    using iterator_t = typename _ElemContainerTy::container_t::iterator;
-private :
-    derived_t *derived_;
-public :
-    add_base_methods()
-        : derived_(static_cast<derived_t*>(this))
-        {
-        }
-    
-    iterator_t begin() {
-        return iterator_t( derived_->data() );
-        }
-
-    iterator_t end() {
-        return iterator_t( derived_->data() + access::size<_DerivedTy>(derived_) );
-        }
-    };
-
-template<
-    class _DerivedTy,
-    class _ElemContainerTy>
-    class add_const_iterators
-    {
-public :
-    using derived_t        = _DerivedTy;
+	using derived_t        = _DerivedTy;
+	using iterator_t       = typename _ElemContainerTy::container_t::iterator;
     using const_iterator_t = typename _ElemContainerTy::container_t::const_iterator;
 private :
     derived_t *derived_;
 public :
-    add_base_methods()
+    add_base_iterators()
+		: derived_(static_cast<derived_t*>(this))
+        {
+		}
+    
+	iterator_t begin() {
+		return access<_ElemContainerTy>::get_container(derived_).begin();
+        }
+
+	iterator_t end() {
+		return access<_ElemContainerTy>::get_container(derived_).end();
+		}
+
+    const_iterator_t begin() const {
+		return begin();
+		}
+
+	const_iterator_t end() const {
+		return end();
+		}
+	};
+
+template<
+    class _DerivedTy,
+    class _ElemContainerTy>
+	class add_const_iterators
+    {
+public :
+    using derived_t        = _DerivedTy;
+	using const_iterator_t = typename _ElemContainerTy::container_t::const_iterator;
+private :
+    derived_t *derived_;
+public :
+    add_const_iterators()
         : derived_(static_cast<derived_t*>(this))
         {
-        }
-    
-    const_iterator_t begin() const {
-        return const_iterator_t( derived_->data() );
+		}
+
+	const_iterator_t cbegin() const {
+		return access<_ElemContainerTy>::get_container(derived_).cbegin();
         }
 
-    const_iterator_t end() const {
-        return const_iterator_t( derived_->data() + access<_DerivedTy>::size(derived_) );
+	const_iterator_t cend() const {
+		return access<_ElemContainerTy>::get_container(derived_).cend();
         }
+	};
 
-    const_iterator_t cbegin() const {
-        return begin();
-        }
-
-    const_iterator_t cend() const {
-        return end();
-        }
+template<
+	class _DerivedTy,
+	class _ElemContainerTy>
+	class add_iterators
+		: public add_base_iterators<_DerivedTy, _ElemContainerTy>
+		, public add_const_iterators<_DerivedTy, _ElemContainerTy>
+	{
     };
 
 template<

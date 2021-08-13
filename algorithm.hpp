@@ -5,92 +5,139 @@
 #include "matrix_view.hpp"
 #include <algorithm>
 #include <stack>
-#include <optional>
 #include <functional>
 #include <random>
+#include <optional>
 
 namespace tvd {
 
-template<typename _Ty>
-    bool less(_Ty const& l, _Ty const& r) noexcept {
+template<
+    typename _LTy,
+    typename _RTy>
+    bool less(_LTy const& l, _RTy const& r) noexcept {
         return (l < r);
     }
 
-template<typename _Ty>
-    bool equal(_Ty const& l, _Ty const& r) noexcept {
+template<
+    typename _LTy,
+    typename _RTy>
+    bool greater(_LTy const& l, _RTy const& r) noexcept {
+        return (l > r);
+    }
+
+template<
+    typename _LTy,
+    typename _RTy>
+    bool less_or_equals(_LTy const& l, _RTy const& r) noexcept {
+        return (l <= r);
+    }
+
+template<
+    typename _LTy,
+    typename _RTy>
+    bool greater_or_equals(_LTy const& l, _RTy const& r) noexcept {
+        return (l >= r);
+    }
+
+template<
+    typename _LTy,
+    typename _RTy>
+    bool equals(_LTy const& l, _RTy const& r) noexcept {
         return (l == r);
+    }
+
+template<
+    typename _LTy,
+    typename _RTy>
+    bool non_equals(_LTy const& l, _RTy const& r) noexcept {
+        return (l != r);
     }
 
 template<class _ContainerTy>
     bool out_of_range(_ContainerTy const& c, size_t const& i) noexcept {
-        return (std::size(c) >= i);
+		return less_or_equals(std::size(c), i);
     }
 
 template<typename _MatrixrTy>
     bool out_of_range(_MatrixrTy const& m, size_t const& i, size_t const& j) noexcept {
-        return (m.size() >= i || m.csize() >= j);
+		return ( less_or_equals(m.size(), i) || less_or_equals(m.csize(), j) );
     }
 
 template<typename _Ty>
-    std::optional<matrix<_Ty, 2> > min_by_backtracking(matrix_view<_Ty> const& map, 
-                                                       size_t const& i_from, size_t const& j_from,
-                                                       size_t const& i_to,   size_t const& j_to,   
-                                                       _Ty    const& no_pass                       ) 
+	std::optional<matrix<size_t, 2> > min_by_backtracking(matrix_view<_Ty> const& map,
+										                  size_t const& i_from, size_t const& j_from,
+										                  size_t const& i_to,   size_t const& j_to,
+									                      _Ty    const& no_pass                       )
     {
-        if( out_of_range(m, i_from, j_from) || out_of_range(m, i_to, j_to) ) {
-            throw EXCEPTION("tvd::min_by_backtracking : bad indexes");
+        if( out_of_range(map, i_from, j_from) || out_of_range(map, i_to, j_to) ) {
+            throw EXCEPTION("tvd::min_by_backtracking : out of range");
         }
 
-        typedef std::pait<size_t, size_t> pair_t;
-        typedef matrix<_Ty, 2>            matrix_2xn_t;
-        typedef std::stack<pair_t>        stack_pair_t;
+        typedef std::pair<size_t, size_t>        pair_t;
+		typedef math_types::matrix_2xn_t<size_t> matrix_2xn_t;
+		typedef std::stack<pair_t>               stack_pair_t;
 
-        matrix_2xn_t min_w; 
-        stack_pair_t stack( size*map.size() );
-        pair_t current { i_from, j_from };
+        stack_pair_t stack;
+		matrix_2xn_t min_w { i_from, j_from };
+        pair_t       current { i_from, j_from };
 
-        auto get_neighbour = [&current, &no_pass, &min_w, &current](auto const& map) -> std::optional<pair_t>
+        auto visited_cell = [&min_w](size_t const& i_ne, size_t const& j_ne) 
         {
-            matrix_2xn_t neighbours;
-            size_t i = current.first; 
-            size_t j = current.second;
-		    if( !less(size, j + 1) ) {
-			    if(map[i][j + 1] != no_pass) {
-				    neighbours.push_back( { i, j + 1 } );
+            for(size_t i = 0; i < min_w.size(); i++)
+                if(min_w[i][0] == i_ne && min_w[i][1] == j_ne) {
+                    return true;
+                }
+            return false;
+		};
+
+		auto get_neighbours = [&no_pass, &min_w, &current, &visited_cell](auto const& map) -> matrix_2xn_t
+		{
+			matrix_2xn_t neighbours;
+			size_t &i( current.first ), &j( current.second );
+            const auto col_size = map.csize();
+			const auto size = map.size();
+		    if( less(j + 1, col_size) ) {
+			    if( map[i][j + 1] != no_pass && !visited_cell(i, j + 1) ) {
+					neighbours.push_back( { i, j + 1 } );
 			    }
-		    }
-		    if( !less(size, i + 1) ) {
-			    if(maze[i + 1][j] != no_pass) {
+			}
+		    if( less(i + 1, size) ) {
+			    if( map[i + 1][j] != no_pass  && !visited_cell(i + 1, j) ) {
 				    neighbours.push_back( { i + 1, j } );
 			    }
 		    }
-		    if( !equal(i, 0) ) {
-			    if(maze[i - 1][j] != no_pass) {
+		    if( non_equals(i, 0) ) {
+			    if( map[i - 1][j] != no_pass  && !visited_cell(i - 1, j) ) {
 				    neighbours.push_back( { i - 1, j } );
 			    }
 		    }
-		    if( !equal(j, 0) ) {
-			    if(maze[i][j - 1] != no_pass) {
+		    if( non_equals(j, 0) ) {
+			    if( map[i][j - 1] != no_pass  && !visited_cell(i, j - 1) ) {
 				    neighbours.push_back( { i, j - 1 } );
 			    }
-		    }
-		    return neighbours.empty() ? std::nullopt : {  };
-        };
-        
-        while(!(current.first == i_to && current.second == j_to)) {
-		    auto neighbour = get_neighbour(map);
-		    if(!neighbour) {
-			    stack.push(current);
-			    current = neighbour;
+			}
+			return neighbours;
+		};
+
+		while( !(current.first == i_to && current.second == j_to) ) {
+			auto neighbours = get_neighbours(map);
+			if( !neighbours.empty() ) {
+				stack.push(current);
+                std::random_device rd;
+                std::mt19937 mersenne(rd());
+                size_t i_r = mersenne()%neighbours.size();
+				current = { neighbours[i_r][0], neighbours[i_r][1] };
 			    min_w.push_back( { current.first, current.second } );
-		    } else if(!stack.empty()) {
+			} else if( !stack.empty() ) {
 			    current = stack.top();
 			    stack.pop();
 		    } else {
-			    return std::nullopt;
-		    }
-	    }
-	    return min_w;
+				return std::nullopt;
+			}
+		}
+        std::optional<matrix_2xn_t> min;
+        min.emplace( min_w );
+		return min;
     }
 // swap if
 template<
