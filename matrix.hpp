@@ -7,7 +7,6 @@
 #include "base_mixing_templates.hpp"
 #include "type_traits.hpp"
 #include <vector>
-#include <array>
 
 namespace tvd {
 
@@ -512,7 +511,7 @@ template<
 
     reference_t operator [] (size_t const& j) {
         if(j >= col_size) {
-            throw EXCEPTION("TMtxVector : bad access");
+            throw EXCEPTION("vector : bad access");
             }
         if constexpr(std::is_pointer_v<_Ty>) return *container_[j];
         else return container_[j];
@@ -520,7 +519,7 @@ template<
 
     type_t operator [] (size_t const& j) const {
         if(j >= col_size) {
-            throw EXCEPTION("TMtxVector : bad access");
+            throw EXCEPTION("vector : bad access");
             }
         if constexpr(std::is_pointer_v<_Ty>) return *container_[j];
         else return container_[j];

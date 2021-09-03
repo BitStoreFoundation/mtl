@@ -25,8 +25,8 @@ template<
     friend std::ostream& operator << (std::ostream& os, print_manip const& manip) {
         auto f = std::begin(manip.v_), l = std::end(manip.v_);
         os << "{ ";
-        while (f != l)
-            if ((os << *f) && (++f != l))
+        while( f != l )
+            if( (os << *f) && (++f != l) )
                 os << manip.d_;
         return os << " }";
         }

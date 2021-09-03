@@ -4,9 +4,6 @@
 
 #include "matrix_view.hpp"
 #include <algorithm>
-#include <stack>
-#include <functional>
-#include <random>
 #include <optional>
 
 namespace tvd {
@@ -55,89 +52,130 @@ template<
 
 template<class _ContainerTy>
     bool out_of_range(_ContainerTy const& c, size_t const& i) noexcept {
-		return less_or_equals(std::size(c), i);
+		return std::size(c) <= i;
     }
 
-template<typename _MatrixrTy>
+template<class _MatrixrTy>
     bool out_of_range(_MatrixrTy const& m, size_t const& i, size_t const& j) noexcept {
-		return ( less_or_equals(m.size(), i) || less_or_equals(m.csize(), j) );
+		return ( m.size() <= i || m.csize() <= j );
+    }
+
+template<
+    class _Ty,
+    size_t size,
+    class _ConditionTy>
+    bool insert(matrix<_Ty, size> & m, vector<_Ty, size> const& v, _ConditionTy const& c) noexcept {
+        for(size_t i(0); i < std::size(m); i++)
+            if( !c(m[i]) ) return false;
+        m.push_back( v );
+        return true;
     }
 
 template<typename _Ty>
-	std::optional<matrix<size_t, 2> > min_by_backtracking(matrix_view<_Ty> const& map,
-										                  size_t const& i_from, size_t const& j_from,
-										                  size_t const& i_to,   size_t const& j_to,
-									                      _Ty    const& no_pass                       )
+	std::optional<matrix<int, 3> > lee_neumann( matrix_view<_Ty> const& map,
+                                                int const& x_from, int const& y_from,
+                                                int const& x_to,   int const& y_to,
+                                                _Ty const& blank                      )
     {
-        if( out_of_range(map, i_from, j_from) || out_of_range(map, i_to, j_to) ) {
-            throw EXCEPTION("tvd::min_by_backtracking : out of range");
+        if( out_of_range(map, y_from, x_from) || out_of_range(map, y_to, x_to) ) {
+            throw EXCEPTION("tvd::lee_neumann : out of range");
+        }
+        if( map[y_from][x_from] != blank || map[y_to][x_to] != blank ) {
+            return std::nullopt;
+        }
+        
+        typedef math_types::matrix_3xn_t<int> matrix_3xn_t;
+        typedef math_types::vector4_t<int>    vector4_t;
+        typedef math_types::vector3_t<int>    vector3_t;
+        
+        matrix_3xn_t    way = { y_from, x_from, 0 };
+        const vector4_t dx  = { 1, 0, -1,  0 };
+        const vector4_t dy  = { 0, 1,  0, -1 };
+        bool            stop;
+
+        auto wave_propagation = [&map,  &blank,
+                                 &way,  &stop, 
+                                 &dx,   &dy,
+                                 &x_to, &y_to    ]( const auto y, const auto x, const auto & d )
+            -> int
+        {
+            for( size_t i(0); i < 4; i++ )
+            {
+                int iy = y + dy[i], ix = x + dx[i];
+                if ( !out_of_range(map, iy, ix) &&
+                     iy          >= 0           &&
+                     ix          >= 0           &&
+                     map[iy][ix] == blank          )
+                {
+                    if( insert( way, { iy, ix, static_cast<int>(d) + 1 },
+                               [&ix, &iy]( auto const& v )
+                               { return !(v[0] == iy && v[1] == ix); }) )
+                    {
+                        if( iy == y_to && ix == x_to)
+                        {
+                            return std::size(way) - 1;
+                        }
+                        stop = false;
+                    }
+                }
+            }
+            return 0;
+        };
+
+        int y_end(0);
+        size_t d(0);
+
+        do {
+            stop = true;
+            for( size_t i(0); i < std::size(way); i++ ) {
+                if( way[i][2] == d ) {
+                    y_end = wave_propagation(way[i][0], way[i][1], d);
+                }
+                if( y_end ) {
+                    break;
+                }
+            }
+            d++;
+        } while( !stop );
+
+        if( !y_end ) {
+            return std::nullopt;
         }
 
-        typedef std::pair<size_t, size_t>        pair_t;
-		typedef math_types::matrix_2xn_t<size_t> matrix_2xn_t;
-		typedef std::stack<pair_t>               stack_pair_t;
-
-        stack_pair_t stack;
-		matrix_2xn_t min_w { i_from, j_from };
-        pair_t       current { i_from, j_from };
-
-        auto visited_cell = [&min_w](size_t const& i_ne, size_t const& j_ne) 
+        auto neighbour = [&dx, &dy](auto const& curr_v, auto const& last_v)
         {
-            for(size_t i = 0; i < min_w.size(); i++)
-                if(min_w[i][0] == i_ne && min_w[i][1] == j_ne) {
-                    return true;
+            return ( ( last_v[0] - 1 == curr_v[0]   || last_v[0] + 1 == curr_v[0] ) &&
+                     ( last_v[1]     == curr_v[1] ) ||
+                     ( last_v[1] - 1 == curr_v[1]   || last_v[1] + 1 == curr_v[1] ) &&
+                     ( last_v[0]     == curr_v[0] )                                    );
+        };
+
+        int x(x_to), y(y_to);
+        vector3_t last_v( way[y_end] );
+        d = way[y_end][2] - 1;
+        y_end--;
+        matrix_3xn_t min_w;
+        min_w.push_back( { x_to, y_to, 1 } );
+
+        while( d > 0 ) {
+            auto l = d;
+            for( size_t i(y_end); i != 0; i-- ) {
+                if( way[i][2] == d && neighbour(way[i], last_v) ) {
+                    min_w.push_back( { way[i][1], way[i][0], 1 } );
+                    last_v = way[i];
+                    d--;
+                    break;
                 }
-            return false;
-		};
+            }
+            if( l == d ) {
+                return std::nullopt;
+            }
+        }
 
-		auto get_neighbours = [&no_pass, &min_w, &current, &visited_cell](auto const& map) -> matrix_2xn_t
-		{
-			matrix_2xn_t neighbours;
-			size_t &i( current.first ), &j( current.second );
-            const auto col_size = map.csize();
-			const auto size = map.size();
-		    if( less(j + 1, col_size) ) {
-			    if( map[i][j + 1] != no_pass && !visited_cell(i, j + 1) ) {
-					neighbours.push_back( { i, j + 1 } );
-			    }
-			}
-		    if( less(i + 1, size) ) {
-			    if( map[i + 1][j] != no_pass  && !visited_cell(i + 1, j) ) {
-				    neighbours.push_back( { i + 1, j } );
-			    }
-		    }
-		    if( non_equals(i, 0) ) {
-			    if( map[i - 1][j] != no_pass  && !visited_cell(i - 1, j) ) {
-				    neighbours.push_back( { i - 1, j } );
-			    }
-		    }
-		    if( non_equals(j, 0) ) {
-			    if( map[i][j - 1] != no_pass  && !visited_cell(i, j - 1) ) {
-				    neighbours.push_back( { i, j - 1 } );
-			    }
-			}
-			return neighbours;
-		};
-
-		while( !(current.first == i_to && current.second == j_to) ) {
-			auto neighbours = get_neighbours(map);
-			if( !neighbours.empty() ) {
-				stack.push(current);
-                std::random_device rd;
-                std::mt19937 mersenne(rd());
-                size_t i_r = mersenne()%neighbours.size();
-				current = { neighbours[i_r][0], neighbours[i_r][1] };
-			    min_w.push_back( { current.first, current.second } );
-			} else if( !stack.empty() ) {
-			    current = stack.top();
-			    stack.pop();
-		    } else {
-				return std::nullopt;
-			}
-		}
-        std::optional<matrix_2xn_t> min;
-        min.emplace( min_w );
-		return min;
+        min_w.push_back( { x_from, y_from, 1 } );
+        std::optional<matrix_3xn_t> o_min_w;
+        o_min_w.emplace( min_w );
+        return o_min_w;
     }
 // swap if
 template<

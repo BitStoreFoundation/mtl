@@ -171,5 +171,4 @@ template<size_t size>
         }
     };
 }
-
 #endif
