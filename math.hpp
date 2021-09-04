@@ -1,8 +1,8 @@
 // c++17 @Tarnakin V.D.
 //this header has a description of the matrix transforms
 #pragma once
-#ifndef MATH_FUNCTIONS_HPP
-#define MATH_FUNCTIONS_HPP
+#ifndef MATH_HPP
+#define MATH_HPP
 
 #include "matrix.hpp"
 #include "math_defines.hpp"
