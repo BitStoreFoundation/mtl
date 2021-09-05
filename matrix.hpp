@@ -11,20 +11,6 @@
 namespace tvd {
 
 template<
-    template<
-        typename,
-        size_t>
-        class _ContainerTy,
-    typename _Ty,
-    size_t size>
-    std::vector<_Ty> to_std_vector(_ContainerTy<_Ty, size> container) {
-        std::vector<_Ty> v;
-        for(auto & it : container)
-            v.push_back(it);
-        return v;
-    }
-
-template<
     typename _Ty = float,
     size_t col_size = 3,
     class _ElemTraitsTy = elem_traits<_Ty> >
@@ -359,10 +345,11 @@ template<
         {
         for(size_t j = 0; j < col_size; j++)
             {
-            if constexpr(std::is_pointer_v<Ty>)
+            if constexpr(std::is_pointer_v<Ty>) {
                 container_[j] = matrix.container_[i*col_size + j];
-            else
+            } else {
                 container_[j] = &matrix.container_[i*col_size + j];
+                }
             }
         }
 
@@ -444,19 +431,13 @@ template<
         if(col_size != other.size()) {
             return false;
             }
-        for(size_t i = 0; i < col_size; i++)
-            {
-            if constexpr(std::is_pointer_v<_Ty>)
-                {
-                if((*container_[i]) != other[i])
-                    {
+        for(size_t i = 0; i < col_size; i++) {
+            if constexpr(std::is_pointer_v<_Ty>) {
+                if((*container_[i]) != other[i]) {
                     return false;
                     }
-                }
-            else
-                {
-                if(container_[i] != other[i])
-                    {
+            } else {
+                if(container_[i] != other[i]) {
                     return false;
                     }
                 }
@@ -466,46 +447,51 @@ template<
 
     vector & operator += (vector<pointer_t, col_size> const& other) {
         for(size_t i = 0; i < col_size; i++)
-            if constexpr(std::is_pointer_v<_Ty>)
+            if constexpr(std::is_pointer_v<_Ty>) {
                 (*container_[i]) += other[i];
-            else
+            } else {
                 container_[i] += other[i];
+                }
         return *this;
         }
 
     vector & operator += (vector<type_t, col_size> const& other) {
-        for(size_t i = 0; i < col_size; i++)
-            if constexpr(std::is_pointer_v<_Ty>)
+        for(size_t i = 0; i < col_size; i++) 
+            if constexpr(std::is_pointer_v<_Ty>) {
                 (*container_[i]) += other[i];
-            else
+            } else {
                 container_[i] += other[i];
+                }
         return *this;
         }
 
     vector & operator -= (vector<pointer_t, col_size> const& other) {
         for(size_t i = 0; i < col_size; i++)
-            if constexpr(std::is_pointer_v<_Ty>)
+            if constexpr(std::is_pointer_v<_Ty>) {
                 (*container_[i]) -= other[i];
-            else
+            } else {
                 container_[i] -= other[i];
+                }
         return *this;
         }
 
     vector & operator -= (vector<type_t, col_size> const& other) {
         for(size_t i = 0; i < col_size; i++)
-            if constexpr(std::is_pointer_v<_Ty>)
+            if constexpr(std::is_pointer_v<_Ty>) {
                 (*container_[i]) -= other[i];
-            else
+            } else {
                 container_[i] -= other[i];
+                }
         return *this;
         }
 
     vector & operator *= (type_t const& value) {
         for(auto & it : container_)
-            if constexpr(std::is_pointer_v<_Ty>)
+            if constexpr(std::is_pointer_v<_Ty>) {
                 (*it) += value;
-            else
+            } else {
                 it += value;
+                }
         return *this;
         }
 
