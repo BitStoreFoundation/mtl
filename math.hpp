@@ -88,7 +88,7 @@ template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
     void move( detail::matrix_3xn_t<_Ty> & m_res, _Ty x0, _Ty y0, _Ty x1, _Ty y1 )
     { 
-    math_types::matrix_3xn_t<_Ty> t_tr
+    detail::matrix_3xn_t<_Ty> t_tr
     {   1,          0,       0,
         0,          1,       0,
         x1 - x0,    y1 - y0, 1   };
@@ -110,7 +110,7 @@ template<
     _Ty m = m_res[0][0]*(1 - k_x);
     _Ty l = m_res[0][1]*(1 - k_y);
 
-    math_types::matrix_3xn_t<_Ty> t_scl
+    detail::matrix_3xn_t<_Ty> t_scl
     {   k_x, 0,   0,
         0,   k_y, 0,
         m,   l,   1   };
@@ -127,7 +127,7 @@ template<
     _Ty sin = std::sin(r_ang);
     _Ty cos = std::cos(r_ang);
 
-    math_types::matrix_3xn_t<_Ty> t_rot
+    detail::matrix_3xn_t<_Ty> t_rot
     {   cos,                 sin,                 0,
        -sin,                 cos,                 0,
         x*(1 - cos) + y*sin, y*(1 - cos) - x*sin, 1   };
