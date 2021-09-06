@@ -55,7 +55,7 @@ template<
     typename _Ty,
     size_t col_size,
     is_arithmetic_t<_Ty> = true >
-    std::pair<matrix<_Ty, col_size>, matrix<_Ty, col_size> > LU(matrix<_Ty, col_size> const & A) 
+    std::pair<matrix<_Ty, col_size>, matrix<_Ty, col_size> > LU( matrix<_Ty, col_size> const & A )
     {
     if( A.empty() ) {
         throw EXCEPTION("tvd::LU : matrix's is empty");
@@ -86,7 +86,7 @@ template<
 
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void move(math_types::matrix_3xn_t<_Ty> & m_res, _Ty x0, _Ty y0, _Ty x1, _Ty y1) 
+    void move( detail::matrix_3xn_t<_Ty> & m_res, _Ty x0, _Ty y0, _Ty x1, _Ty y1 )
     { 
     math_types::matrix_3xn_t<_Ty> t_tr
     {   1,          0,       0,
@@ -97,7 +97,7 @@ template<typename _Ty,
     }
 
 template<typename _Ty>
-    void move(math_types::matrix_3xn_t<_Ty> & m_res, _Ty x, _Ty y) 
+    void move( detail::matrix_3xn_t<_Ty> & m_res, _Ty x, _Ty y )
     {
     move(m_res, 0, 0, x, y);
     }
@@ -105,7 +105,7 @@ template<typename _Ty>
 template<
     typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void scale(math_types::matrix_3xn_t<_Ty> & m_res, _Ty k_x, _Ty k_y) 
+    void scale( detail::matrix_3xn_t<_Ty> & m_res, _Ty k_x, _Ty k_y )
     {
     _Ty m = m_res[0][0]*(1 - k_x);
     _Ty l = m_res[0][1]*(1 - k_y);
@@ -121,7 +121,7 @@ template<
 template<
     typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void rotate(math_types::matrix_3xn_t<_Ty> & m_res, short g_ang, _Ty x, _Ty y) 
+    void rotate( detail::matrix_3xn_t<_Ty> & m_res, short g_ang, _Ty x, _Ty y )
     {
     auto r_ang = i_to_rads(g_ang);
     _Ty sin = std::sin(r_ang);

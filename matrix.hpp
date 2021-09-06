@@ -523,7 +523,7 @@ template<
     size_t col_size>
     matrix(vector<_Ty, col_size>) -> matrix<_Ty, col_size>;
 // definitions
-namespace math_types {
+namespace detail {
 // matrix with size 2xn/3xn/4xn
 template<typename _Ty>
     using matrix_2xn_t = matrix<_Ty, 2>;

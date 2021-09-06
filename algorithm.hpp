@@ -127,7 +127,7 @@ template<typename _Ty>
 template<
     typename _Ty,
     typename _ConditionTy>
-    void swap_if(_Ty & l, _Ty & r, _ConditionTy const& condition) 
+    void swap_if( _Ty & l, _Ty & r, _ConditionTy const& condition )
     {
     if( !condition(l, r) ) return;
     std::swap(l, r);
@@ -136,40 +136,40 @@ template<
 template<
     typename _Ty,
     size_t size>
-    _Ty min(matrix<_Ty, size> const& m, size_t j_pos) 
+    _Ty min( matrix<_Ty, size> const& m, size_t j_pos )
     {
-    if(m.empty()) {
+    if( m.empty() ) {
         throw EXCEPTION("tvd::min : matrix's is empty");
         }
-    if(size <= j_pos) {
+    if( size <= j_pos ) {
         throw EXCEPTION("tvd::min : matrix's col_size <= j_pos");
         }
     auto first = m.begin();
     auto last = m.end();
     first += j_pos;
     _Ty min = (*first);
-    for(auto & fst = first; fst < last; fst += size) 
-        if(min > (*fst)) min = (*fst);
+    for(auto & fst(first); fst < last; fst += size)
+        if( min > (*fst) ) min = (*fst);
     return min;
     }
 // max value in matrix column
 template<
     typename _Ty,
     size_t size>
-    _Ty max(matrix<_Ty, size> const& m, size_t j_pos)
+    _Ty max( matrix<_Ty, size> const& m, size_t j_pos )
     {
-    if(m.empty()) {
+    if( m.empty() ) {
         throw EXCEPTION("tvd::max : matrix's is empty");
         } 
-    if(size <= j_pos) {
+    if( size <= j_pos ) {
         throw EXCEPTION("tvd::max : matrix's col_size <= j_pos");
         }
     auto first = m.begin();
     auto last = m.end();
     _Ty max = (*first);
     first += j_pos;
-    for(auto & fst = first; fst < last; fst += size)
-        if(max < (*fst)) max = (*fst);
+    for(auto & fst(first); fst < last; fst += size)
+        if( max < (*fst) ) max = (*fst);
     return max;
     }
 // min & max value in matrix column
