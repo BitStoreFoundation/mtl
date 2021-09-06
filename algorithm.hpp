@@ -34,9 +34,9 @@ template<typename _Ty>
         return std::nullopt;
         }
         
-    typedef math_types::matrix_3xn_t<int> matrix_3xn_t;
-    typedef math_types::vector4_t<int>    vector4_t;
-    typedef math_types::vector3_t<int>    vector3_t;
+    typedef detail::matrix_3xn_t<int> matrix_3xn_t;
+    typedef detail::vector4_t<int>    vector4_t;
+    typedef detail::vector3_t<int>    vector3_t;
         
     matrix_3xn_t    way = { y_from, x_from, 0 };
     const vector4_t dx  = { 1, 0, -1,  0 };
@@ -144,8 +144,8 @@ template<
     if( size <= j_pos ) {
         throw EXCEPTION("tvd::min : matrix's col_size <= j_pos");
         }
-    auto first = m.begin();
-    auto last = m.end();
+    auto first = m.cbegin();
+    auto last = m.cend();
     first += j_pos;
     _Ty min = (*first);
     for(auto & fst(first); fst < last; fst += size)
@@ -164,8 +164,8 @@ template<
     if( size <= j_pos ) {
         throw EXCEPTION("tvd::max : matrix's col_size <= j_pos");
         }
-    auto first = m.begin();
-    auto last = m.end();
+    auto first = m.cbegin();
+    auto last = m.cend();
     _Ty max = (*first);
     first += j_pos;
     for(auto & fst(first); fst < last; fst += size)
