@@ -13,7 +13,7 @@ template<
     class _Ty,
     size_t size,
     class _ConditionTy>
-    bool insert(matrix<_Ty, size> & m, vector<_Ty, size> const& v, _ConditionTy const& c) noexcept 
+    bool insert_if(matrix<_Ty, size> & m, vector<_Ty, size> const& v, _ConditionTy const& c) noexcept 
     {
     for(size_t i(0); i < std::size(m); i++)
         if( !c(m[i]) ) return false;
@@ -57,9 +57,10 @@ template<typename _Ty>
                  ix          >= 0           &&
                  map[iy][ix] == blank          )
                 {
-                if( insert( way, { iy, ix, static_cast<int>(d) + 1 },
-                    [&ix, &iy]( auto const& v )
-                    { return !(v[0] == iy && v[1] == ix); }) )
+                if( insert_if( way, { iy, ix, static_cast<int>(d) + 1 },
+                    [&ix, &iy]( auto const& v ) { 
+                        return !(v[0] == iy && v[1] == ix); 
+                    }) )
                     {
                     if( iy == y_to && ix == x_to)
                         {

@@ -2,8 +2,6 @@
 #ifndef ABSTRACT_VISITOR_HPP
 #define ABSTRACT_VISITOR_HPP
 
-#include <variant>
-
 namespace tvd {
 
 template<class... _ArgsTy> 

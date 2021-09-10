@@ -4,68 +4,67 @@
 
 #include <unordered_map>
 #include <functional>
+#include <optional>
+#include <boost/variant.hpp>
 
 namespace tvd {
 
 template<
-    class _IdTy,
-    class _UnusedTy>
-    class abstract_factory { };
-
-template<
-    class _IdTy,
-    class _BaseTy,
+    typename _KeyTy,
     typename ... _ArgsTy>
-    class abstract_factory<_IdTy, _BaseTy(_ArgsTy ...)>
+    class abstract_factory
     {
 public :
-    using id_t        = _IdTy;
-    using base_ptr_t  = _BaseTy*;
-    using creator_t   = std::function<base_ptr_t(_ArgsTy ...)>;
-    using init_list_t = std::initializer_list<std::pair<id_t, creator_t> > const&;
+    using key_t       = _KeyTy;
+    using var_t       = boost::variant<std::shared_ptr<_ArgsTy> ... >;
+    using o_var_t     = std::optional<var_t>;
+    using creator_t   = std::function<var_t()>;
+    using hash_tbl_t  = std::unordered_map<key_t, creator_t>;
+    using init_list_t = std::initializer_list< std::pair<key_t, creator_t> > const&;
 private :
-    using hash_tbl_t = std::unordered_map<id_t, creator_t>;
     hash_tbl_t hash_tbl_;
 public :
     abstract_factory() = default;
     abstract_factory(abstract_factory const&) = default;
     abstract_factory& operator = (abstract_factory const&) = default;
 
-    abstract_factory(init_list_t list) {
-        for(auto const & pair : list)
-            hash_tbl_.insert(pair);
+    abstract_factory( init_list_t list ) 
+        {
+        for(auto const& pair : list)
+            hash_tbl_.insert( pair );
         }
 
-    void registerClass(id_t const& id, creator_t const& create) {
-        if(!create) {
-            throw EXCEPTION("abstract_factory : creator_t = null");
+    void registerClass( key_t const& key, creator_t const& create ) 
+        {
+        if( !create ) {
+            throw EXCEPTION("<abstract_factory::registerClass> : <create> is empty wrap of functional object");
             }
-        auto it = hash_tbl_.find(id);
-        if(it != hash_tbl_.end()) {
-            throw EXCEPTION("abstract_factory : id already exsist");
+        auto it = hash_tbl_.find( key );
+        if( it != hash_tbl_.end() ) {
+            throw EXCEPTION("<abstract_factory::registerClass> : <key> already exsist");
             }
-        hash_tbl_.emplace(id, create);
+        hash_tbl_.emplace( key, create );
         }
 
-    template<class _DerivedTy>
-        void registerClass(id_t const& id) {
-            auto it = hash_tbl_.find(id);
-            if(it != hash_tbl_.end()) {
-                throw EXCEPTION("abstract_factory : id already exsist");
-                }
-            hash_tbl_.emplace(id, &create<_DerivedTy>);
+template<class _ObjTy>
+    void registerClass( key_t const& key ) 
+        {
+        auto it = hash_tbl_.find( key );
+        if( it != hash_tbl_.end() ) {
+            throw EXCEPTION("<abstract_factory::registerClass> : <key> already exsist");
             }
+        hash_tbl_.emplace( key, &create<_ObjTy> );
+        }
 
-    base_ptr_t get_object(id_t const& id, _ArgsTy const& ... args) {
-        auto it = hash_tbl_.find(id);
-        return it != hash_tbl_.end() ? it->second(args ...) : nullptr;
+    o_var_t operator () ( key_t const& key ) 
+        {
+        auto it = hash_tbl_.find( key );
+        return it != hash_tbl_.end() ? it->second() : std::nullopt;
         }
 private :
 
-    template<class _DerivedTy>
-        static base_ptr_t create(_ArgsTy ... args) {
-            return new _DerivedTy(args ...);
-            }
+template<class _ObjTy>
+    static var_t create() { return std::make_shared<_ObjTy>(); } 
     };
 }
 #endif
