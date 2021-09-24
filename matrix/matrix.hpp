@@ -11,85 +11,85 @@
 namespace tvd {
 
 template<
-	typename _Ty,
-	size_t,
-	typename = elem_traits<typename std::remove_pointer<_Ty>::type> >
-	class vector;
+    typename _Ty,
+    size_t,
+    typename = elem_traits<typename std::remove_pointer<_Ty>::type> >
+    class vector;
 // vector mixing
 template<
-	typename _Ty,
-	size_t size,
-	typename _ElemTraitsTy>
-	using vec_mixing_list_t = mixing_list
-	<
-	  add_iterators< vector<_Ty, size>, elem_container<elem_traits<_Ty>, std::array<_Ty, size> > >,
-	  add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
-	  add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
-	  add_sum< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
-	  add_sum< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
-	  add_difference< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
-	  add_difference< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
-	  add_division_by_value< vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::type_t, size> >
-	>;
+    typename _Ty,
+    size_t size,
+    typename _ElemTraitsTy>
+    using vec_mixing_list_t = mixing_list
+    <
+      add_iterators< vector<_Ty, size>, elem_container<elem_traits<_Ty>, std::array<_Ty, size> > >,
+      add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+      add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
+      add_sum< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+      add_sum< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
+      add_difference< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+      add_difference< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
+      add_division_by_value< vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::type_t, size> >
+    >;
 // vector container
 template<
-	typename _Ty,
-	size_t col_size,
-	typename _ElemTraitsTy>
-	class vector final : public vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>
-	{
-	  static_assert(
-		!is_null_size_v<col_size>,
-		"< tvd::vector<_Ty, size_t> > : <col_size> == <0>"
-	  );
+    typename _Ty,
+    size_t col_size,
+    typename _ElemTraitsTy>
+    class vector final : public vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>
+    {
+      static_assert(
+        !is_null_size_v<col_size>,
+        "< tvd::vector<_Ty, size_t> > : <col_size> == <0>"
+      );
 
-	  using elem_container_t = elem_container< elem_traits<_Ty>, std::array<_Ty, col_size> >;
-	  friend struct access<elem_container_t>;
+      using elem_container_t = elem_container< elem_traits<_Ty>, std::array<_Ty, col_size> >;
+      friend struct access<elem_container_t>;
 public : // definitions
-	  using type_t           = typename _ElemTraitsTy::type_t;
-	  using pointer_t        = typename _ElemTraitsTy::pointer_t;
-	  using const_pointer_t  = const type_t*;
-	  using reference_t      = typename _ElemTraitsTy::reference_t;
-	  using init_list_t      = std::initializer_list<_Ty> const&;
-	  using iterator_t       = typename elem_container_t::container_t::iterator;
-	  using const_iterator_t = typename elem_container_t::container_t::const_iterator;
+      using type_t           = typename _ElemTraitsTy::type_t;
+      using pointer_t        = typename _ElemTraitsTy::pointer_t;
+      using const_pointer_t  = const type_t*;
+      using reference_t      = typename _ElemTraitsTy::reference_t;
+      using init_list_t      = std::initializer_list<_Ty> const&;
+      using iterator_t       = typename elem_container_t::container_t::iterator;
+      using const_iterator_t = typename elem_container_t::container_t::const_iterator;
 private :
-	  typename elem_container_t::container_t container_;
+      typename elem_container_t::container_t container_;
 public :
 
-	  vector()
-		: vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>()
+      vector()
+        : vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>()
       {
       }
 
-	  vector( vector const& other )
+      vector( vector const& other )
         : container_( other.container_ )
       {
       }
 
-	  vector( vector && other ) noexcept
+      vector( vector && other ) noexcept
         : container_( std::move( other.container_ ) )
       {
       }
 
   template<
-	  typename _EnableTy = _Ty,
-	  is_pointer_t<_EnableTy> = false>
-	  vector( _Ty const& value )
+      typename _EnableTy = _Ty,
+      is_pointer_t<_EnableTy> = false>
+      vector( _Ty const& value )
         : vector()
       {
         for( auto & value_ : container_ ) {
             value_ = value;
         }
-	  }
+      }
 
   template<
-	  typename _MatrixTy,
-	  typename _EnableTy = _Ty,
-	  is_pointer_t<_EnableTy> = true>
-	  vector( _MatrixTy const& matrix, size_t const& i )
+      typename _MatrixTy,
+      typename _EnableTy = _Ty,
+      is_pointer_t<_EnableTy> = true>
+      vector( _MatrixTy const& matrix, size_t const& i )
         : vector()
-	  {
+      {
         for( size_t j(0); j < col_size; j++ )
         {
             if constexpr( std::is_pointer_v<typename _MatrixTy::type_t> ) {
@@ -100,35 +100,35 @@ public :
         }
       }
 
-	  vector( init_list_t list )
+      vector( init_list_t list )
         : vector()
       {
         if( col_size < list.size() ) {
-			throw TVD_EXCEPTION( "<vector::vector> : bad initializer_list <size>" );
+            throw TVD_EXCEPTION( "<vector::vector> : bad initializer_list <size>" );
         }
         size_t j( 0 );
         for( auto const& col : list ) {
             container_[j++] = col;
-        }
-	  }
+	}
+      }
 
-	  bool empty() const noexcept {
-		return container_.empty();
-	  }
+      bool empty() const noexcept {
+        return container_.empty();
+      }
 
-	  pointer_t data() noexcept {
+      pointer_t data() noexcept {
         return container_.data();
       }
 
-	  const_pointer_t data() const noexcept {
+      const_pointer_t data() const noexcept {
         return container_.data();
       }
 
-	  size_t size() const noexcept {
+      size_t size() const noexcept {
         return col_size;
       }
 
-	  vector & operator = ( vector const& other )
+      vector & operator = ( vector const& other )
       {
         if( this == &other ) {
             return *this;
@@ -137,7 +137,7 @@ public :
         return *this;
       }
 
-	  vector & operator = ( vector && other ) noexcept
+      vector & operator = ( vector && other ) noexcept
       {
         if( this == &other ) {
             return *this;
@@ -147,19 +147,19 @@ public :
       }
 
   template<
-	  typename Ty,
-	  typename _EnableTy = _Ty,
-	  is_pointer_t<_EnableTy> = true>
-	  operator vector<Ty, col_size> ()
-	  {
+      typename Ty,
+      typename _EnableTy = _Ty,
+      is_pointer_t<_EnableTy> = true>
+      operator vector<Ty, col_size> ()
+      {
         vector<Ty, col_size> vector;
         for( size_t i(0); i < col_size; i++ ) {
             vector[i] = *container_[i];
-		}
-		return vector;
+        }
+        return vector;
       }
 
-	  bool operator == ( vector<pointer_t, col_size> const& other )
+      bool operator == ( vector<pointer_t, col_size> const& other )
       {
         if( col_size != other.size() ) {
             return false;
@@ -179,7 +179,7 @@ public :
         return true;
       }
 
-	  bool operator == ( vector<type_t, col_size> const& other )
+      bool operator == ( vector<type_t, col_size> const& other )
       {
         if( col_size != other.size() ) {
             return false;
@@ -199,12 +199,12 @@ public :
         return true;
       }
 
-	  vector & operator += ( vector<pointer_t, col_size> const& other )
+      vector & operator += ( vector<pointer_t, col_size> const& other )
       {
         for( size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
-                ( *container_[i] ) += other[i];
+             ( *container_[i] ) += other[i];
             } else {
                 container_[i] += other[i];
             }
@@ -212,12 +212,12 @@ public :
         return *this;
       }
 
-	  vector & operator += ( vector<type_t, col_size> const& other )
+      vector & operator += ( vector<type_t, col_size> const& other )
       {
         for( size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
-                ( *container_[i] ) += other[i];
+             ( *container_[i] ) += other[i];
             } else {
                 container_[i] += other[i];
             }
@@ -225,12 +225,12 @@ public :
         return *this;
       }
 
-	  vector & operator -= ( vector<pointer_t, col_size> const& other )
+      vector & operator -= ( vector<pointer_t, col_size> const& other )
       {
         for( size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
-                ( *container_[i] ) -= other[i];
+             ( *container_[i] ) -= other[i];
             } else {
                 container_[i] -= other[i];
             }
@@ -238,12 +238,12 @@ public :
         return *this;
       }
 
-	  vector & operator -= ( vector<type_t, col_size> const& other )
+      vector & operator -= ( vector<type_t, col_size> const& other )
       {
         for( size_t i(0); i < col_size; i++ )
         {
             if constexpr( std::is_pointer_v<_Ty> ) {
-                ( *container_[i] ) -= other[i];
+             ( *container_[i] ) -= other[i];
             } else {
                 container_[i] -= other[i];
             }
@@ -251,12 +251,12 @@ public :
         return *this;
       }
 
-	  vector & operator *= ( type_t const& value )
+      vector & operator *= ( type_t const& value )
       {
         for( auto & it : container_ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
-                ( *it ) += value;
+             ( *it ) += value;
             } else {
                 it += value;
             }
@@ -264,10 +264,10 @@ public :
         return *this;
       }
 
-	  reference_t operator [] ( size_t const& j )
+      reference_t operator [] ( size_t const& j )
       {
         if( j >= col_size ) {
-			throw TVD_EXCEPTION( "<vector::operator[]> : bad access" );
+            throw TVD_EXCEPTION( "<vector::operator[]> : bad access" );
         }
         if constexpr ( std::is_pointer_v<_Ty> ) {
             return *container_[j];
@@ -276,10 +276,10 @@ public :
         }
       }
 
-	  type_t operator [] ( size_t const& j ) const
+      type_t operator [] ( size_t const& j ) const
       {
         if( j >= col_size ) {
-			throw TVD_EXCEPTION( "<vector::operator[] const> : bad access" );
+            throw TVD_EXCEPTION( "<vector::operator[] const> : bad access" );
         }
         if constexpr(std::is_pointer_v<_Ty>) {
             return *container_[j];
@@ -287,114 +287,114 @@ public :
             return container_[j];
         }
       }
-	}; // end vector container
+    }; // end vector container
 // matrix mixing list
 template<
-	typename _MatrixTy,
-	typename _ElemTraitsTy>
-	using mtx_mixing_list_t = mixing_list
-	<
-	  add_iterators< _MatrixTy, elem_container<_ElemTraitsTy, std::vector<typename _ElemTraitsTy::type_t> > >,
-	  add_non_equalable< _MatrixTy >,
-	  add_sum< _MatrixTy >,
-	  add_difference< _MatrixTy >,
-	  add_division_by_value< _MatrixTy, _ElemTraitsTy >
-	>;
+    typename _MatrixTy,
+    typename _ElemTraitsTy>
+    using mtx_mixing_list_t = mixing_list
+    <
+      add_iterators< _MatrixTy, elem_container<_ElemTraitsTy, std::vector<typename _ElemTraitsTy::type_t> > >,
+      add_non_equalable< _MatrixTy >,
+      add_sum< _MatrixTy >,
+      add_difference< _MatrixTy >,
+      add_division_by_value< _MatrixTy, _ElemTraitsTy >
+    >;
 // matrix container
 template<
-	typename _Ty = float,
-	size_t col_size = 3,
-	typename _ElemTraitsTy = elem_traits<_Ty> >
-	class matrix final : public mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>
-	{
-	  static_assert(
-		!std::is_pointer_v<_Ty>,
-		"< tvd::matrix<_Ty, size_t> > : no specialization of class for pointer"
-	  );
+    typename _Ty = float,
+    size_t col_size = 3,
+    typename _ElemTraitsTy = elem_traits<_Ty> >
+    class matrix final : public mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>
+    {
+      static_assert(
+        !std::is_pointer_v<_Ty>,
+        "< tvd::matrix<_Ty, size_t> > : no specialization of class for pointer"
+      );
 
-	  static_assert(
-		!is_null_size_v<col_size>,
-		"< tvd::matrix<_Ty, size_t> > : <col_size> == <0>"
-	  );
+      static_assert(
+        !is_null_size_v<col_size>,
+        "< tvd::matrix<_Ty, size_t> > : <col_size> == <0>"
+      );
 
-	  using elem_container_t = elem_container< elem_traits<_Ty>, std::vector<_Ty> >;
-	  friend struct access<elem_container_t>;
-	  friend class  vector<_Ty*, col_size>;
+      using elem_container_t = elem_container< elem_traits<_Ty>, std::vector<_Ty> >;
+      friend struct access<elem_container_t>;
+      friend class  vector<_Ty*, col_size>;
 public :
-	  using add_multiplying_by_value<matrix<_Ty, col_size>, _ElemTraitsTy>::operator*;
-	  using ptrs_vector_t    = vector<_Ty*, col_size>;
-	  using vector_t         = vector<_Ty, col_size>;
-	  using type_t           = typename _ElemTraitsTy::type_t;
-	  using pointer_t        = typename _ElemTraitsTy::pointer_t;
-	  using const_pointer_t  = const type_t*;
-	  using iterator_t       = typename elem_container_t::container_t::iterator;
-	  using const_iterator_t = typename elem_container_t::container_t::const_iterator;
+      using add_multiplying_by_value<matrix<_Ty, col_size>, _ElemTraitsTy>::operator*;
+      using ptrs_vector_t    = vector<_Ty*, col_size>;
+      using vector_t         = vector<_Ty, col_size>;
+      using type_t           = typename _ElemTraitsTy::type_t;
+      using pointer_t        = typename _ElemTraitsTy::pointer_t;
+      using const_pointer_t  = const type_t*;
+      using iterator_t       = typename elem_container_t::container_t::iterator;
+      using const_iterator_t = typename elem_container_t::container_t::const_iterator;
   template<typename Ty = _Ty>
-	  using init_list_t = std::initializer_list<Ty> const&;
+      using init_list_t = std::initializer_list<Ty> const&;
 private :
-	  mutable typename elem_container_t::container_t container_;
+      mutable typename elem_container_t::container_t container_;
 public :
-	  matrix() = default;
+      matrix() = default;
 
-	  matrix( matrix const & other )
+      matrix( matrix const & other )
         : container_( other.container_ )
       {
       }
 
-	  matrix( matrix && other ) noexcept
+      matrix( matrix && other ) noexcept
         : container_( std::move( other.container_ ) )
       {
       }
 
-	  explicit matrix( size_t const& size )
+      explicit matrix( size_t const& size )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_( size*col_size )
       {
       }
 
-	  matrix( init_list_t<> list )
+      matrix( init_list_t<> list )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_( list.size() )
       {
         if( col_size > list.size() || list.size()%col_size != 0 ) {
-			throw TVD_EXCEPTION( "<matrix::matrix> : bad <initializer_list> size" );
-		}
-		std::copy( list.begin(), list.end(), container_.begin() );
-	  }
+            throw TVD_EXCEPTION( "<matrix::matrix> : bad <initializer_list> size" );
+        }
+        std::copy( list.begin(), list.end(), container_.begin() );
+      }
 
-	  matrix( init_list_t<vector_t> list )
+      matrix( init_list_t<vector_t> list )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_( list.size() )
       {
         if( col_size > list.size() || list.size()%col_size != 0 ) {
-			throw TVD_EXCEPTION( "<matrix::matrix> : bad <initializer_list> <size>" );
+            throw TVD_EXCEPTION( "<matrix::matrix> : bad <initializer_list> <size>" );
         }
         for( auto const & vector : list ) {
             insert( vector );
         }
-	  }
+      }
 
-	  bool empty() const noexcept {
-		return container_.empty();
-	  }
+      bool empty() const noexcept {
+        return container_.empty();
+      }
 
-	  pointer_t data() noexcept {
+      pointer_t data() noexcept {
         return container_.data();
       }
 
-	  const_pointer_t data() const noexcept {
+      const_pointer_t data() const noexcept {
         return container_.data();
       }
 
-	  size_t size() const noexcept {
+      size_t size() const noexcept {
         return container_.size()/col_size;
       }
 
-	  size_t csize() const noexcept {
+      size_t csize() const noexcept {
         return col_size;
       }
 
-	  void resize( size_t size )
+      void resize( size_t size )
       {
         if( size == this->size() ) {
             return;
@@ -405,36 +405,36 @@ public :
         container_.resize( size*col_size );
       }
 
-	  void push_front( vector_t vector ) {
+      void push_front( vector_t vector ) {
         container_.insert( container_.begin(), vector.begin(), vector.end() );
       }
 
-	  void push_back( vector_t vector ) {
+      void push_back( vector_t vector ) {
         container_.insert( container_.end(), vector.begin(), vector.end() );
       }
 
-	  void insert( vector_t vector, size_t pos = 0 )
+      void insert( vector_t vector, size_t pos = 0 )
       {
         if( pos >= container_.size() ) {
-			throw TVD_EXCEPTION( "<matrix::insert> : bad insert position" );
+            throw TVD_EXCEPTION( "<matrix::insert> : bad insert position" );
         }
         container_.insert( container_.begin() + pos*col_size, vector.begin(), vector.end() );
       }
 
-	  void erase( size_t pos )
+      void erase( size_t pos )
       {
         if( pos >= container_.size() ) {
-			throw TVD_EXCEPTION( "<matrix::erase> : bad erase position" );
-		}
+            throw TVD_EXCEPTION( "<matrix::erase> : bad erase position" );
+        }
         auto it( container_.begin() + pos*col_size );
         container_.erase( it, it + col_size );
       }
-	  // overloads
-	  bool operator == ( matrix const& other ) {
-		return container_ == other.container_;
+      // overloads
+      bool operator == ( matrix const& other ) {
+        return container_ == other.container_;
       }
 
-	  matrix & operator += ( matrix const& other )
+      matrix & operator += ( matrix const& other )
       {
         for( size_t i(0); i < container_.size(); i++ ) {
             container_[i] += other.container_[i];
@@ -442,7 +442,7 @@ public :
         return *this;
       }
 
-	  matrix & operator -= ( matrix const& other )
+      matrix & operator -= ( matrix const& other )
       {
         for( size_t i(0); i < container_.size(); i++ ) {
             container_[i] -= other.container_[i];
@@ -450,7 +450,7 @@ public :
         return *this;
       }
 
-	  matrix & operator *= ( _Ty const& value )
+      matrix & operator *= ( _Ty const& value )
       {
         for( auto & elem : container_ ) {
             elem *= value;
@@ -458,48 +458,48 @@ public :
         return *this;
       }
 
-	  matrix & operator *= ( matrix const& other )
-	  {
-		matrix r( size() );
-		multiply( r.data(), other );
-		std::copy( r.begin(), r.end(), container_.begin() );
-		return *this;
-	  }
+      matrix & operator *= ( matrix const& other )
+      {
+        matrix r( size() );
+        multiply( r.data(), other );
+        std::copy( r.begin(), r.end(), container_.begin() );
+        return *this;
+      }
 
   template<size_t col_size_>
-	  matrix<_Ty, col_size_> operator * ( matrix<_Ty, col_size_> const& other ) {
-		matrix<_Ty, col_size_> r( size() );
-		multiply( r.data(), other );
-		return r;
-	  }
+      matrix<_Ty, col_size_> operator * ( matrix<_Ty, col_size_> const& other ) {
+        matrix<_Ty, col_size_> r( size() );
+        multiply( r.data(), other );
+        return r;
+      }
 
-	  matrix & operator = ( matrix const& other )
+      matrix & operator = ( matrix const& other )
       {
         if( this == &other ) return *this;
         container_ = other.container_;
         return *this;
       }
 
-	  matrix & operator = ( matrix && other ) noexcept
+      matrix & operator = ( matrix && other ) noexcept
       {
         if( this == &other ) return *this;
         container_ = std::move( other.container_ );
         return *this;
       }
 
-	  matrix & operator = ( init_list_t<> list )
-	  {
+      matrix & operator = ( init_list_t<> list )
+      {
         if( container_.size() > list.size() ) {
-			throw TVD_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
-		}
-		std::copy( list.begin(), list.end(), container_.begin() );
+            throw TVD_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
+        }
+        std::copy( list.begin(), list.end(), container_.begin() );
         return *this;
       }
 
-	  matrix & operator = ( init_list_t<vector_t> list )
+      matrix & operator = ( init_list_t<vector_t> list )
       {
         if( container_.size() > list.size() ) {
-			throw TVD_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
+            throw TVD_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
         }
         for( auto const & vector : list ) {
             insert( vector );
@@ -507,82 +507,75 @@ public :
         return *this;
       }
 
-	  ptrs_vector_t operator [] ( size_t const& i )
+      ptrs_vector_t operator [] ( size_t const& i )
       {
-		if( i >= std::size( container_ ) ) {
-			throw TVD_EXCEPTION( "<matrix::operator[]> : <i> >= <col_size> | <matrix> is empty" );
+        if( i >= std::size( container_ ) ) {
+            throw TVD_EXCEPTION( "<matrix::operator[]> : <i> >= <col_size> | <matrix> is empty" );
         }
-		return vector<_Ty*, col_size>( *this, i );
+        return vector<_Ty*, col_size>( *this, i );
       }
 
-	  const ptrs_vector_t operator [] ( size_t const& i ) const
-	  {
-		if( i >= std::size( container_ ) ) {
-			throw TVD_EXCEPTION( "<matrix> : <i> >= <col_size> | <matrix> is empty" );
-		}  /*
-        vector_t vector;
-		std::copy( std::execution::par, container_.begin() + i*col_size,
-				   container_.begin() + col_size*(i + 1), vector.begin() );
-		return vector;*/
-		return vector<_Ty*, col_size>( *this, i );
-	  }
+      const ptrs_vector_t operator [] ( size_t const& i ) const
+      {
+        if( i >= std::size( container_ ) ) {
+            throw TVD_EXCEPTION( "<matrix> : <i> >= <col_size> | <matrix> is empty" );
+        }
+        return vector<_Ty*, col_size>( *this, i );
+      }
 private :
 
   template<size_t col_size_>
-	  void multiply( _Ty *r, matrix<_Ty, col_size_> const& m )
-	  {
+      void multiply( _Ty *r, matrix<_Ty, col_size_> const& m )
+      {
         if constexpr( std::is_pointer_v<_Ty> ) {
-			static_assert(
-			  false_v<_Ty>,
-			  "<matrix::multiply> : no viable overloaded for pointer type"
-			);
+            static_assert(
+              false_v<_Ty>,
+              "<matrix::multiply> : no viable overloaded for pointer type"
+            );
         }
-		if( col_size != std::size( m ) ) {
+        if( col_size != std::size( m ) ) {
             throw TVD_EXCEPTION( "<matrix::multiply> : col1 != row2" );
-		}/*
-		1 2 3  1 2  (0 0)1(1) = (0 0)1(1)*(0 0)2(1) + (0 1)1(2)*(1 0)2(2) + (0 2)1(3)*(2 0)2(3)
-		4 5 6  3 4    col_size_
-		7 8 9  5 6*/
-		auto m_ = m.data();
-		for( size_t i(0); i < std::size( container_ ); i++ )
+        }
+        auto m_ = m.data();
+        for( size_t i(0); i < std::size( container_ ); i++ )
         {
             for( size_t j(0); j < col_size_; j++ ) 
             {
                 for( size_t k(0); k < col_size; k++ ) 
                 {
-					r[i*col_size_ + j] += container_[i*col_size + k]*m_[k*col_size_ + j];
-				}
-			}
+                    r[i*col_size_ + j] += container_[i*col_size + k]*m_[k*col_size_ + j];
+                }
+            }
         }
       }
-	}; // end matrix container
+    }; // end matrix container
 
-	// deduction guide
+    // deduction guide
 template<
     typename _Ty, 
     typename... _ArgsTy>
-	vector(_Ty, _ArgsTy...) -> vector<_Ty, 1 + sizeof...(_ArgsTy)>;
+    vector(_Ty, _ArgsTy...) -> vector<_Ty, 1 + sizeof...(_ArgsTy)>;
 
 template<
     typename _Ty, 
     size_t col_size>
-	matrix(vector<_Ty, col_size>) -> matrix<_Ty, col_size>;
+    matrix(vector<_Ty, col_size>) -> matrix<_Ty, col_size>;
     // matrix detail
-	namespace detail {
-	  // matrix with size 2xn/3xn/4xn
+    namespace detail {
+      // matrix with size 2xn/3xn/4xn
   template<typename _Ty>
-	  using matrix_2xn_t = matrix<_Ty, 2>;
+      using matrix_2xn_t = matrix<_Ty, 2>;
   template<typename _Ty>
-	  using matrix_3xn_t = matrix<_Ty, 3>;
+      using matrix_3xn_t = matrix<_Ty, 3>;
   template<typename _Ty>
-	  using matrix_4xn_t = matrix<_Ty, 4>;
-	  // vector with 2/3/4 elements
+      using matrix_4xn_t = matrix<_Ty, 4>;
+      // vector with 2/3/4 elements
   template<typename _Ty>
-	  using vector2_t = vector<_Ty, 2>;
+      using vector2_t = vector<_Ty, 2>;
   template<typename _Ty>
-	  using vector3_t = vector<_Ty, 3>;
+      using vector3_t = vector<_Ty, 3>;
   template<typename _Ty>
-	  using vector4_t = vector<_Ty, 4>;
+      using vector4_t = vector<_Ty, 4>;
     } // detail
 } // tvd
 #endif
