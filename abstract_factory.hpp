@@ -1,6 +1,6 @@
 #pragma once
-#ifndef TVD_CONTAINER_ABSTRACT_FACTORY_HPP
-#define TVD_CONTAINER_ABSTRACT_FACTORY_HPP
+#ifndef TVD_ABSTRACT_FACTORY_HPP
+#define TVD_ABSTRACT_FACTORY_HPP
 
 #include "tvd/exception.hpp"
 
