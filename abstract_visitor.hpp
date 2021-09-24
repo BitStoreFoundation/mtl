@@ -1,6 +1,6 @@
 #pragma once
-#ifndef ABSTRACT_VISITOR_HPP
-#define ABSTRACT_VISITOR_HPP
+#ifndef TVD_ABSTRACT_VISITOR_HPP
+#define TVD_ABSTRACT_VISITOR_HPP
 
 namespace tvd {
 

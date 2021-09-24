@@ -1,0 +1,79 @@
+#pragma once
+#ifndef TVD_IO_HPP
+#define TVD_IO_HPP
+
+#include "matrix.hpp"
+#include <iostream>
+
+namespace tvd {
+
+namespace manips {
+
+template<
+    typename _ContTy,
+    typename _DelimTy = const char*>
+    struct print_manip {
+
+    _ContTy const& v_;
+    _DelimTy d_;
+
+    print_manip(_ContTy const& v, _DelimTy d = ", ")
+        : v_(v), d_(std::move(d))
+        {
+        }
+
+    friend std::ostream& operator << (std::ostream& os, print_manip const& manip) {
+        auto f = std::begin(manip.v_), l = std::end(manip.v_);
+        os << "{ ";
+        while( f != l )
+            if( (os << *f) && (++f != l) )
+                os << manip.d_;
+        return os << " }";
+        }
+    };
+}
+
+template<
+    typename _ContTy,
+    typename _DelimTy = const char*>
+    manips::print_manip<_ContTy, _DelimTy> print(_ContTy const& deduce, _DelimTy delim = ", ") {
+        return { deduce, std::move(delim) };
+	}
+
+template<
+	typename _Ty,
+	size_t size>
+	std::ostream & operator << ( std::ostream & o, vector<_Ty, size> v )
+	{
+	  ostream << "[" << size << "]{";
+	  std::ostream_iterator<_Ty> out_itr ( o, ", ");
+	  std::copy( v.begin(), v.end(), out_itr );
+	  o << "}" << std::endl;
+	  return o;
+	}
+
+template<ypename _Ty>
+	std::ostream & operator << ( std::ostream & o, matrix_view<_Ty> m )
+	{
+	  using std::endl;
+	  auto size = matrix.size();
+	  o << "Rows : " << size << endl;
+	  o << "Cols : " << matrix.csize() << endl;
+	  for(size_t i = 0; i < size - 1; i++)
+	  {
+		  o << "{ ";
+          std::ostream_iterator<_Ty> out_itr ( o, ", ");
+		  std::copy( m[i].begin(), m[i].end(), out_itr );
+		  o << " }" << endl;
+	  }
+	  return o;
+	}
+
+template<
+	typename _Ty,
+	size_t csize>
+	std::ostream & operator << ( std::ostream & o, matrix<_Ty, csize> m ) {
+	  return o << matrix_view<_Ty>( m );
+	}
+}
+#endif

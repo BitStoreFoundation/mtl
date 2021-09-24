@@ -1,0 +1,187 @@
+#pragma once
+#ifndef TVD_MATRIX_MATRIX_VIEW_HPP
+#define TVD_MATRIX_MATRIX_VIEW_HPP
+
+#include "tvd/base_mixing_templates.hpp"
+#include "tvd/type_traits.hpp"
+
+#include <iostream>
+
+namespace tvd {
+
+template<
+    typename _Ty = float, 
+    class _ElemTraitsTy = elem_traits<_Ty> >
+	class matrix_view;
+
+template<
+    typename _MatrixTy,
+    class _ElemTraitsTy>
+	using mtx_v_mixing_list_t = mixing_list<
+        add_non_equalable<_MatrixTy>
+    >;
+
+template<
+	typename _Ty,
+	class _ElemTraitsTy>
+	class matrix_view final : public mtx_v_mixing_list_t<matrix_view<_Ty>, _ElemTraitsTy>
+    {
+	  static_assert(
+		!std::is_pointer_v<_Ty>,
+		"tvd::matrix_view<_Ty> : no specialization of class for pointer"
+	  );
+
+	  struct do_nothing_deleter
+	  {
+	template<typename>
+		void operator()(_Ty*) { }
+	  };
+
+  template<typename Ty>
+	  class iterator : public std::iterator<std::input_iterator_tag, Ty>
+	  {
+		friend class matrix_view<Ty>;
+		Ty* p_;
+  public :
+		iterator(iterator const& it)
+		  : p_(it.p_)
+		{
+		}
+
+		bool operator == (iterator const& right) const {
+		  return p_ == right.p_;
+		}
+
+        bool operator != (iterator const& right) const {
+		  return p_ != right.p_;
+		}
+
+		typename iterator::reference operator*() const {
+		  return *p_;
+		}
+		iterator& operator++() {
+		  ++p_;
+		  return *this;
+		}
+  private :
+		iterator(Ty *p)
+		  : p_(p)
+		{
+		}
+	  };
+
+public :
+	  using add_non_equalable<matrix_view<_Ty> >::operator!=;
+	  using type_t            = typename _ElemTraitsTy::type_t;
+	  using const_pointer_t   = const type_t*;
+	  using const_iterator_t  = const iterator<_Ty>;
+	  using vector_t          = std::vector<type_t>;
+private :
+	  const size_t size_;
+	  const size_t col_size_;
+	  std::shared_ptr<type_t[]> array_;
+public :
+	  matrix_view(matrix_view const&)              = default;
+	  matrix_view& operator = (matrix_view const&) = default;
+
+	  matrix_view()
+		: mtx_v_mixing_list_t<matrix_view<_Ty>, _ElemTraitsTy>()
+        , size_(0)
+        , col_size_(0)
+        , array_(nullptr)
+	  {
+	  }
+
+  template<typename MatrixTy>
+	  explicit matrix_view( MatrixTy const& m )
+		: mtx_v_mixing_list_t<matrix_view<_Ty>, _ElemTraitsTy>()
+		, size_( m.size() )
+		, col_size_( m.csize() )
+		, array_( m.data(), do_nothing_deleter() )
+	  {
+		if( (col_size_ || size_) == 0) {
+			throw TVD_EXCEPTION("matrix_view::matrix_view(matrix<_Ty, size> const&) : (col_size_ || size_) == 0)");
+		}
+	  }
+    
+	  matrix_view(_Ty *array, size_t size, size_t col_size = 3)
+        : mtx_v_mixing_list_t<matrix_view<_Ty>, _ElemTraitsTy>()
+		, size_(size)
+		, col_size_(col_size)
+		, array_(array)
+	  {
+        if( (col_size || size) == 0) {
+			throw TVD_EXCEPTION("matrix_view::matrix_view(...) : (col_size || size) == 0)");
+		}
+	  }
+
+	  const_pointer_t begin() const {
+		return const_pointer_t(array_);
+	  }
+
+	  const_pointer_t end() const {
+		return const_pointer_t(array_ + size_*col_size_);
+	  }
+
+	  const_pointer_t cbegin() const {
+		return begin();
+	  }
+
+	  const_pointer_t cend() const {
+		return end();
+	  }
+
+	  const_pointer_t data() const noexcept {
+        return array_;
+	  }
+
+	  size_t size() const noexcept {
+        return size_;
+	  }
+
+	  size_t csize() const noexcept {
+        return col_size_;
+	  }
+    // overloads
+	  bool operator == (matrix_view<_Ty> const& right) {
+        if(size_ != right.size_) {
+            return false;
+		}
+		for(size_t i = 0; i < size_; i++)
+			if(array_[i] != right.array_[i]) {
+                return false;
+			}
+        return true;
+	  }
+
+  template<size_t size>
+	  bool operator == (matrix<_Ty, size> const& right) {
+		if(size_ != right.size()) {
+			return false;
+		}
+		const auto *array = right.data();
+		for(size_t i = 0; i < size; i++)
+			if(array_[i] != array[i]) {
+				return false;
+			}
+		return true;
+	  }
+
+  template<size_t size>
+	  bool operator != (matrix<_Ty, size> const& right) {
+		return !(*this == right);
+	  }
+
+	  vector_t operator [] (size_t const& i) const {
+        if(i >= size_*col_size_) {
+            throw TVD_EXCEPTION("matrix : i >= col_size | matrix is empty");
+		}
+		vector_t vector(col_size_);
+		for(size_t j = i*col_size_, k = 0; j < col_size_ *(i + 1); j++, k++) {
+			vector[k] = array_[j];
+		}
+        return vector;
+	  }
+	};
+}
+#endif

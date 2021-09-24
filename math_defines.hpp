@@ -1,6 +1,6 @@
 #pragma once
-#ifndef MATH_DEFINES_HPP
-#define MATH_DEFINES_HPP
+#ifndef TVD_MATH_DEFINES_HPP
+#define TVD_MATH_DEFINES_HPP
 namespace tvd {
 constexpr double k_e        = 2.71828182845904523536;
 constexpr double k_log2e    = 1.44269504088896340736;
