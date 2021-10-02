@@ -1,40 +1,40 @@
 // c++17 @Tarnakin V.D.
 //this header has a description of the matrix transforms
 #pragma once
-#ifndef TVD_MATH_HPP
-#define TVD_MATH_HPP
+#ifndef MTL_MATH_HPP
+#define MTL_MATH_HPP
 
-#include "tvd/matrix/matrix.hpp"
-#include "tvd/matrix/matrix_view.hpp"
-#include "tvd/math_defines.hpp"
-#include "tvd/algorithm.hpp"
+#include "mtl/matrix/matrix.hpp"
+#include "mtl/matrix/matrix_view.hpp"
+#include "mtl/math_defines.hpp"
+#include "mtl/algorithm.hpp"
 
 #include <cmath>
 
 #ifdef CXX_BUILDER_CXX17
 # include <boost/optional.hpp>
-# define TVD_NULLOPT boost::none
-# define TVD_OPTIONAL(type) boost::optional<type>
+# define MTL_NULLOPT boost::none
+# define MTL_OPTIONAL(type) boost::optional<type>
 #else
 # include <optional>
-# define TVD_NULLOPT std::nullopt
-# define TVD_OPTIONAL(type) std::optional<type>
+# define MTL_NULLOPT std::nullopt
+# define MTL_OPTIONAL(type) std::optional<type>
 #endif
 
-namespace tvd {
+namespace mtl {
 //
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    TVD_OPTIONAL( detail::matrix_3xn_t<size_t> ) lee_neumann( matrix_view<_Ty> const& map,
+    MTL_OPTIONAL( detail::matrix_3xn_t<size_t> ) lee_neumann( matrix_view<_Ty> const& map,
                                                               size_t x_from, size_t y_from,
                                                               size_t x_to,   size_t y_to,
                                                               _Ty blank                     )
     {
       if( map.size() <= y_from || map.csize() <= x_from || map.size() <= y_to || map.csize() <= x_to ) {
-          throw TVD_EXCEPTION("<tvd::lee_neumann> : out of range");
+          throw MTL_EXCEPTION("<MTL::lee_neumann> : out of range");
       }
       if( map[y_from][x_from] != blank || map[y_to][x_to] != blank ) {
-          return TVD_NULLOPT;
+          return MTL_NULLOPT;
       }
 
       using matrix_3xn_t = detail::matrix_3xn_t<size_t>;
@@ -89,7 +89,7 @@ template<typename _Ty,
           d++;
       } while( !stop );
 
-      if( !y_end ) return TVD_NULLOPT;
+      if( !y_end ) return MTL_NULLOPT;
 
       auto neighbour = [&dx, &dy]( auto const& curr_v, auto const& last_v )
       {
@@ -118,7 +118,7 @@ template<typename _Ty,
               }
           }
           if( l == d ) {
-              return TVD_NULLOPT;
+              return MTL_NULLOPT;
           }
       }
 
@@ -128,11 +128,11 @@ template<typename _Ty,
 // LU
 template<typename _MatrixTy,
     is_arithmetic_t<typename _MatrixTy::type_t> = true >
-    std::pair<_MatrixTy, _MatrixTy> LU( _MatrixTy const& A )
+    std::pair<_MatrixTy, _MatrixTy> lu( _MatrixTy const& A )
     {
       auto size = A.csize();
-      if( size != std::size(A) ) {
-          throw TVD_EXCEPTION( "<tvd::LU> : <matrix.size> != <matrix.csize>" );
+      if( size != std::size( A ) ) {
+          throw MTL_EXCEPTION( "<MTL::LU> : <matrix.size> != <matrix.csize>" );
       }
 
       _MatrixTy L( size );
@@ -201,7 +201,7 @@ template<typename _Ty,
 
       m_res *= t_rot;
     }
-} // tvd
-# undef TVD_NULLOPT
-# undef TVD_OPTIONAL
+} // MTL
+# undef MTL_NULLOPT
+# undef MTL_OPTIONAL
 #endif

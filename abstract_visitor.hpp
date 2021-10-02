@@ -1,8 +1,8 @@
 #pragma once
-#ifndef TVD_ABSTRACT_VISITOR_HPP
-#define TVD_ABSTRACT_VISITOR_HPP
+#ifndef MTL_ABSTRACT_VISITOR_HPP
+#define MTL_ABSTRACT_VISITOR_HPP
 
-namespace tvd {
+namespace mtl {
 
 template<class... _ArgsTy> 
     struct abstract_visitor : _ArgsTy ... { using _ArgsTy::operator() ...; };

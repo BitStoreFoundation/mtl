@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-namespace mtl {
+namespace tvd {
 
 template<
     typename _Ty,
@@ -43,5 +43,5 @@ template<
     std::ostream & operator << ( std::ostream & o, matrix<_Ty, size> m ) {
       return o << matrix_view<_Ty>( m );
     }
-} // mtl
+} // tvd
 #endif

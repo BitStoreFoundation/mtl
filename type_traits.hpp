@@ -1,11 +1,11 @@
 // c++17 @Tarnakin V.D.
 #pragma once
-#ifndef TVD_TYPE_TRAITS_HPP
-#define TVD_TYPE_TRAITS_HPP
+#ifndef MTL_TYPE_TRAITS_HPP
+#define MTL_TYPE_TRAITS_HPP
 
 #include <type_traits>
 
-namespace tvd {
+namespace mtl {
 
 template<typename _UnusedTy = void>
     struct is_string : std::false_type { };
@@ -28,15 +28,6 @@ template<
       using type_t      = _Ty;
       using pointer_t   = _PtrTy;
       using reference_t = _RefTy;
-    };
-
-template<
-    typename _ElemTraitsTy,
-    typename _ContainerTy>
-    struct elem_container
-    {
-      using elem_traits_t = _ElemTraitsTy;
-      using container_t   = _ContainerTy;
     };
 
 template<typename>
@@ -72,5 +63,5 @@ template<
     typename _FstTy,
     typename _SecTy>
     using is_base_of_t = std::enable_if_t<std::is_base_of_v<_FstTy, _SecTy>, bool>;
-}
+} // mtl
 #endif

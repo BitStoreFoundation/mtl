@@ -1,15 +1,15 @@
 ﻿// c++17 @Tarnakin V.D.
 //this header has a description of the matrix container
 #pragma once
-#ifndef MTL_MATRIX_MATRIX_HPP
-#define MTL_MATRIX_MATRIX_HPP
+#ifndef TVD_MATRIX_MATRIX_HPP
+#define TVD_MATRIX_MATRIX_HPP
 
-#include "mtl/base_mixing_templates.hpp"
-#include "mtl/type_traits.hpp"
+#include "tvd/base_mixing_templates.hpp"
+#include "tvd/type_traits.hpp"
 #include <vector>
 #include <array>
 
-namespace mtl {
+namespace tvd {
 
 template<
 	typename _Ty,
@@ -22,11 +22,10 @@ template<
 	size_t size>
 	struct private_types_list< vector<_Ty, size> >
 	{
-	  using impl_t      = vector<_Ty, size>;
 	  using container_t = std::array<_Ty, size>;
 	};
 // vector accessor
-	MTL_DECLARE_ACCESSOR( vector_accessor )
+	TVD_DECLARE_ACCESSOR( vector_accessor )
 // vector mixing
 template<
 	typename _Ty,
@@ -53,7 +52,7 @@ template<
     {
       static_assert(
         !is_null_size_v<col_size>,
-		"< mtl::vector<_Ty, size_t> > : <col_size> == <0>"
+        "< tvd::vector<_Ty, size_t> > : <col_size> == <0>"
 	  );
 
 	  using private_types_list_t = private_types_list< vector<_Ty, col_size> >;
@@ -119,7 +118,7 @@ public :
         : vector()
       {
         if( col_size < list.size() ) {
-            throw MTL_EXCEPTION( "<vector::vector> : bad initializer_list <size>" );
+            throw TVD_EXCEPTION( "<vector::vector> : bad initializer_list <size>" );
         }
         size_t j( 0 );
         for( auto const& col : list ) {
@@ -282,7 +281,7 @@ public :
       reference_t operator [] ( size_t const& j )
       {
         if( j >= col_size ) {
-            throw MTL_EXCEPTION( "<vector::operator[]> : bad access" );
+            throw TVD_EXCEPTION( "<vector::operator[]> : bad access" );
         }
         if constexpr ( std::is_pointer_v<_Ty> ) {
             return *container_[j];
@@ -294,7 +293,7 @@ public :
       type_t operator [] ( size_t const& j ) const
       {
         if( j >= col_size ) {
-            throw MTL_EXCEPTION( "<vector::operator[] const> : bad access" );
+            throw TVD_EXCEPTION( "<vector::operator[] const> : bad access" );
         }
         if constexpr(std::is_pointer_v<_Ty>) {
             return *container_[j];
@@ -305,7 +304,7 @@ public :
 	}; // end vector container
 // matrix container
 template<
-	typename _Ty = float,
+	typename = float,
 	size_t = 3,
 	typename = elem_traits<_Ty> >
 	class matrix;
@@ -319,7 +318,7 @@ template<
 	  using container_t = std::vector<_Ty>;
 	};
 // matrix accessor
-	MTL_DECLARE_ACCESSOR( matrix_accessor )
+	TVD_DECLARE_ACCESSOR( matrix_accessor )
 // matrix mixing list
 template<
     typename _MatrixTy,
@@ -341,12 +340,12 @@ template<
 	{
       static_assert(
         !std::is_pointer_v<_Ty>,
-		"< mtl::matrix<_Ty, size_t> > : no specialization of class for pointer"
+        "< tvd::matrix<_Ty, size_t> > : no specialization of class for pointer"
       );
 
       static_assert(
         !is_null_size_v<col_size>,
-		"< mtl::matrix<_Ty, size_t> > : <col_size> == <0>"
+        "< tvd::matrix<_Ty, size_t> > : <col_size> == <0>"
 	  );
 
 	  using private_types_list_t = private_types_list< matrix<_Ty, col_size> >;
@@ -397,7 +396,7 @@ public :
         , container_( list.size() )
       {
         if( col_size > list.size() || list.size()%col_size != 0 ) {
-            throw MTL_EXCEPTION( "<matrix::matrix> : bad <initializer_list> size" );
+            throw TVD_EXCEPTION( "<matrix::matrix> : bad <initializer_list> size" );
         }
         std::copy( list.begin(), list.end(), container_.begin() );
       }
@@ -407,7 +406,7 @@ public :
         , container_( list.size() )
       {
         if( col_size > list.size() || list.size()%col_size != 0 ) {
-            throw MTL_EXCEPTION( "<matrix::matrix> : bad <initializer_list> <size>" );
+            throw TVD_EXCEPTION( "<matrix::matrix> : bad <initializer_list> <size>" );
         }
         for( auto const & vector : list ) {
             insert( vector );
@@ -440,7 +439,7 @@ public :
             return;
         }
         if( size%col_size != 0 ) {
-            throw MTL_EXCEPTION( "<matrix::resize> : bad new size, <size>%<col_size> != <0>" );
+            throw TVD_EXCEPTION( "<matrix::resize> : bad new size, <size>%<col_size> != <0>" );
         }
         container_.resize( size*col_size );
       }
@@ -456,7 +455,7 @@ public :
       void insert( vector_t vector, size_t pos = 0 )
       {
         if( pos >= container_.size() ) {
-            throw MTL_EXCEPTION( "<matrix::insert> : bad insert position" );
+            throw TVD_EXCEPTION( "<matrix::insert> : bad insert position" );
         }
         container_.insert( container_.begin() + pos*col_size, vector.begin(), vector.end() );
       }
@@ -464,7 +463,7 @@ public :
       void erase( size_t pos )
       {
         if( pos >= container_.size() ) {
-            throw MTL_EXCEPTION( "<matrix::erase> : bad erase position" );
+            throw TVD_EXCEPTION( "<matrix::erase> : bad erase position" );
         }
         auto it( container_.begin() + pos*col_size );
         container_.erase( it, it + col_size );
@@ -530,7 +529,7 @@ public :
       matrix & operator = ( init_list_t<> list )
       {
         if( container_.size() > list.size() ) {
-            throw MTL_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
+            throw TVD_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
         }
         std::copy( list.begin(), list.end(), container_.begin() );
         return *this;
@@ -539,7 +538,7 @@ public :
       matrix & operator = ( init_list_t<vector_t> list )
       {
         if( container_.size() > list.size() ) {
-            throw MTL_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
+            throw TVD_EXCEPTION( "<matrix::operator=> : bad <initializer_list> size" );
         }
         for( auto const & vector : list ) {
             insert( vector );
@@ -550,7 +549,7 @@ public :
       ptrs_vector_t operator [] ( size_t const& i )
       {
         if( i >= std::size( container_ ) ) {
-            throw MTL_EXCEPTION( "<matrix::operator[]> : <i> >= <col_size> | <matrix> is empty" );
+            throw TVD_EXCEPTION( "<matrix::operator[]> : <i> >= <col_size> | <matrix> is empty" );
         }
         return vector<_Ty*, col_size>( *this, i );
       }
@@ -558,7 +557,7 @@ public :
       const ptrs_vector_t operator [] ( size_t const& i ) const
       {
         if( i >= std::size( container_ ) ) {
-            throw MTL_EXCEPTION( "<matrix> : <i> >= <col_size> | <matrix> is empty" );
+            throw TVD_EXCEPTION( "<matrix> : <i> >= <col_size> | <matrix> is empty" );
         }
         return vector<_Ty*, col_size>( *this, i );
       }
@@ -574,7 +573,7 @@ private :
             );
         }
         if( col_size != std::size( m ) ) {
-            throw MTL_EXCEPTION( "<matrix::multiply> : col1 != row2" );
+            throw TVD_EXCEPTION( "<matrix::multiply> : col1 != row2" );
         }
         auto m_ = m.data();
         for( size_t i(0); i < std::size( container_ ); i++ )
@@ -617,5 +616,5 @@ template<
   template<typename _Ty>
       using vector4_t = vector<_Ty, 4>;
     } // detail
-} // mtl
+} // tvd
 #endif

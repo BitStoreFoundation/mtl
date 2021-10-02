@@ -2,8 +2,8 @@
 #ifndef TVD_MATRIX_MATRIX_VIEW_HPP
 #define TVD_MATRIX_MATRIX_VIEW_HPP
 
-#include "mtl/base_mixing_templates.hpp"
-#include "mtl/type_traits.hpp"
+#include "tvd/base_mixing_templates.hpp"
+#include "tvd/type_traits.hpp"
 
 #include <iostream>
 
@@ -206,5 +206,5 @@ public :
         return vector;
       }
     };
-} // mtl
+}
 #endif

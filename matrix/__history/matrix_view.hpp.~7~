@@ -2,12 +2,12 @@
 #ifndef TVD_MATRIX_MATRIX_VIEW_HPP
 #define TVD_MATRIX_MATRIX_VIEW_HPP
 
-#include "mtl/base_mixing_templates.hpp"
-#include "mtl/type_traits.hpp"
+#include "tvd/base_mixing_templates.hpp"
+#include "tvd/type_traits.hpp"
 
 #include <iostream>
 
-namespace mtl {
+namespace tvd {
 
 template<
     typename _Ty = float, 
@@ -28,7 +28,7 @@ template<
     {
       static_assert(
         !std::is_pointer_v<_Ty>,
-		"mtl::matrix_view<_Ty> : no specialization of class for pointer"
+        "tvd::matrix_view<_Ty> : no specialization of class for pointer"
       );
 
       struct do_nothing_deleter
@@ -43,16 +43,16 @@ template<
         friend class matrix_view<Ty>;
         Ty* p_;
   public :
-		iterator( iterator const& it )
-          : p_( it.p_ )
+        iterator(iterator const& it)
+          : p_(it.p_)
         {
         }
 
-		bool operator == ( iterator const& right ) const {
+        bool operator == (iterator const& right) const {
           return p_ == right.p_;
         }
 
-		bool operator != ( iterator const& right ) const {
+        bool operator != (iterator const& right) const {
           return p_ != right.p_;
         }
 
@@ -65,8 +65,8 @@ template<
           return *this;
         }
   private :
-		iterator( Ty *p )
-		  : p_( p )
+        iterator(Ty *p)
+          : p_(p)
         {
         }
       };
@@ -99,7 +99,7 @@ public :
         , array_( m.data(), do_nothing_deleter() )
       {
         if( (col_size_ || size_) == 0) {
-            throw MTL_EXCEPTION( "<matrix_view::matrix_view> : <m.size()> == <0>)" );
+            throw TVD_EXCEPTION( "<matrix_view::matrix_view> : <m.size()> == <0>)" );
         }
       }
       // std::default_delete<_Ty[]>()
@@ -110,7 +110,7 @@ public :
         , array_( array )
       {
         if( (col_size || size) == 0) {
-            throw MTL_EXCEPTION( "<matrix_view::matrix_view> : (<col_size> || <size>) == <0>)" );
+            throw TVD_EXCEPTION( "<matrix_view::matrix_view> : (<col_size> || <size>) == <0>)" );
         }
       }
 
@@ -197,7 +197,7 @@ public :
 
       vector_t operator [] (size_t const& i) const {
         if(i >= size_*col_size_) {
-			throw MTL_EXCEPTION("matrix : i >= col_size | matrix is empty");
+            throw TVD_EXCEPTION("matrix : i >= col_size | matrix is empty");
         }
         vector_t vector(col_size_);
         for(size_t j = i*col_size_, k = 0; j < col_size_ *(i + 1); j++, k++) {
@@ -206,5 +206,5 @@ public :
         return vector;
       }
     };
-} // mtl
+}
 #endif

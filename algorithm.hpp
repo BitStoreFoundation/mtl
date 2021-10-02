@@ -1,12 +1,12 @@
 // c++17 @Tarnakin V.D.
 //this header has a description of the algorithms
 #pragma once
-#ifndef TVD_ALGORITHM_HPP
-#define TVD_ALGORITHM_HPP
+#ifndef MTL_ALGORITHM_HPP
+#define MTL_ALGORITHM_HPP
 
 #include <algorithm>
 
-namespace tvd {
+namespace mtl {
 // insert vector to matrix if
 template<
     class _MatrixTy,
@@ -33,11 +33,11 @@ template<typename _MatrixTy>
     auto min( _MatrixTy const& m, size_t j_pos ) -> decltype( *m.begin() )
     {
       if( m.empty() ) {
-          throw TVD_EXCEPTION("<tvd::min> : <matrix> is empty");
+          throw MTL_EXCEPTION("<mtl::min> : <matrix> is empty");
       }
       auto size = m.csize();
       if( size <= j_pos ) {
-          throw TVD_EXCEPTION("<tvd::min> : <matrix.csize> <= <j_pos>");
+          throw MTL_EXCEPTION("<mtl::min> : <matrix.csize> <= <j_pos>");
       }
       auto first = m.cbegin();
       auto last = m.cend();
@@ -54,11 +54,11 @@ template<typename _MatrixTy>
     auto max( _MatrixTy const& m, size_t j_pos ) -> decltype( *m.begin() )
     {
       if( m.empty() ) {
-          throw TVD_EXCEPTION("<tvd::max> : <matrix> is empty");
+          throw MTL_EXCEPTION("<mtl::max> : <matrix> is empty");
       }
       auto size = m.csize();
       if( size <= j_pos ) {
-          throw TVD_EXCEPTION("<tvd::max> : <matrix.csize> <= <j_pos>");
+          throw MTL_EXCEPTION("<mtl::max> : <matrix.csize> <= <j_pos>");
       }
       auto first = m.cbegin();
       auto last = m.cend();
@@ -77,5 +77,5 @@ template<typename _MatrixTy>
     {
       return { min( m, j_pos ), max( m, j_pos ) };
     }
-} // tvd
+} // mtl
 #endif
