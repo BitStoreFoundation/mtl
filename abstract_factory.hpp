@@ -2,16 +2,20 @@
 #ifndef MTL_ABSTRACT_FACTORY_HPP
 #define MTL_ABSTRACT_FACTORY_HPP
 
-#include "mtl/exception.hpp"
+#include "exception.hpp"
 
 #ifdef CXX_BUILDER_CXX17
 # include <boost/variant.hpp>
 # include <boost/optional.hpp>
 # define MTL_NULLOPT boost::none
+# define MTL_VARIANT(type) boost::variant<type>
+# define MTL_OPTIONAL(type) boost::optional<type>
 #else
 # include <variant>
 # include <optional>
 # define MTL_NULLOPT std::nullopt
+# define MTL_VARIANT(type) std::variant<type>
+# define MTL_OPTIONAL(type) std::optional<type>
 #endif
 
 #include <unordered_map>
@@ -26,13 +30,8 @@ template<
     {
 public :
       using key_t       = _KeyTy;
-# ifdef CXX_BUILDER_CXX17
-      using var_t       = boost::variant<std::shared_ptr<_ArgsTy> ... >;
-      using o_var_t     = boost::optional<var_t>;
-# else
-      using var_t       = std::variant<std::shared_ptr<_ArgsTy> ... >;
-      using o_var_t     = std::optional<var_t>;
-# endif
+      using var_t       = MTL_VARIANT( std::shared_ptr<_ArgsTy> ... );
+      using o_var_t     = MTL_OPTIONAL( var_t );
       using creator_t   = std::function<var_t()>;
       using creators_t  = std::unordered_map<key_t, creator_t>;
       using init_list_t = std::initializer_list< std::pair<key_t, creator_t> > const&;
@@ -84,4 +83,6 @@ private :
     };
 } // mtl
 #undef MTL_NULLOPT
+#undef MTL_VARIANT
+#undef MTL_OPTIONAL
 #endif

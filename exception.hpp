@@ -4,7 +4,7 @@
 #ifndef MTL_EXCEPTION_HPP
 #define MTL_EXCEPTION_HPP
 // use std exception
-# ifndef MTL_EXCEPTION
+# ifndef CXX_BUILDER_CXX17
 #  include <exception>
 #  include <stdexcept>
 #  define MTL_EXCEPTION(message) std::runtime_error( message )

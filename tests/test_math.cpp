@@ -1,10 +1,9 @@
 #include "math.hpp"
-#include "matrix/io.hpp"
 
-using namespace tvd;
+using namespace mtl;
 using std::cout;
 using std::endl;
-using matrix_3xn_t = detail::matrix_3xn_t<std::ptrdiff_t>
+using matrix_3xn_t = dense::matrix_3xn_t<std::ptrdiff_t>;
 
 int main() 
 {

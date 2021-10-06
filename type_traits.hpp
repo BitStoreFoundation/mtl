@@ -7,7 +7,7 @@
 
 namespace mtl {
 
-template<typename _UnusedTy = void>
+template<typename = void>
     struct is_string : std::false_type { };
 
 template<>
@@ -18,6 +18,22 @@ template<size_t size>
 
 template<>
     struct is_null_size<0> : std::true_type { };
+
+template<
+    typename, 
+    typename = void>
+    struct is_method_exists: std::false_type { };
+// _Ty::data() 
+template<typename _Ty>
+    using method_data_t = std::enable_if_t<
+      std::is_same_v< decltype( std::declval<_Ty>().data() ), void > 
+    >;
+// is _Ty::data() exists 
+template<typename _Ty>
+    struct is_method_exists< _Ty, method_data_t<_Ty> > : std::true_type { };
+
+template<typename _Ty>
+    constexpr bool is_method_exists_v = is_method_exists<_Ty>::value;
 
 template<
     typename _Ty,

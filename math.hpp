@@ -4,10 +4,9 @@
 #ifndef MTL_MATH_HPP
 #define MTL_MATH_HPP
 
-#include "mtl/matrix/matrix.hpp"
-#include "mtl/matrix/matrix_view.hpp"
-#include "mtl/math_defines.hpp"
-#include "mtl/algorithm.hpp"
+#include "matrix.hpp"
+#include "math_defines.hpp"
+#include "algorithm.hpp"
 
 #include <cmath>
 
@@ -22,27 +21,27 @@
 #endif
 
 namespace mtl {
-//
+
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    MTL_OPTIONAL( detail::matrix_3xn_t<size_t> ) lee_neumann( matrix_view<_Ty> const& map,
-                                                              size_t x_from, size_t y_from,
-                                                              size_t x_to,   size_t y_to,
-                                                              _Ty blank                     )
+    MTL_OPTIONAL( dense::matrix_3xn_t<size_t> ) lee_neumann( sparse::matrix<_Ty> const& map,
+                                                             size_t x_from, size_t y_from,
+                                                             size_t x_to,   size_t y_to,
+                                                             _Ty blank                     )
     {
       if( map.size() <= y_from || map.csize() <= x_from || map.size() <= y_to || map.csize() <= x_to ) {
-          throw MTL_EXCEPTION("<MTL::lee_neumann> : out of range");
+          throw MTL_EXCEPTION("<mtl::lee_neumann> : out of range");
       }
       if( map[y_from][x_from] != blank || map[y_to][x_to] != blank ) {
           return MTL_NULLOPT;
       }
 
-      using matrix_3xn_t = detail::matrix_3xn_t<size_t>;
+      using matrix_3xn_t = dense::matrix_3xn_t<size_t>;
 
-      matrix_3xn_t    way  = { y_from, x_from, 0 };
-      const int       dx[] = { 1, 0, -1,  0 };
-      const int       dy[] = { 0, 1,  0, -1 };
-      bool            stop;
+      matrix_3xn_t way  = { y_from, x_from, 0 };
+      const int    dx[] = { 1, 0, -1,  0 };
+      const int    dy[] = { 0, 1,  0, -1 };
+      bool         stop;
 
       auto wave_propagation = [&map,  &blank,
                                &way,  &stop,
@@ -52,12 +51,12 @@ template<typename _Ty,
         for( size_t i(0); i < 4; i++ )
         {
             int iy = y + dy[i], ix = x + dx[i];
-            if ( (map.size() > iy || map.csize() > ix) &&
-                  iy          >= 0                     &&
-                  ix          >= 0                     &&
-                  map[iy][ix] == blank                    )
+            if( (map.size() > iy || map.csize() > ix) &&
+                 iy          >= 0                     &&
+                 ix          >= 0                     &&
+                 map[iy][ix] == blank                    )
             {
-                if( insert_if( way, { iy, ix, d + 1 },
+                if( way.push_back_if( { iy, ix, d + 1 },
                     [&ix, &iy]( auto const& v ) {
                     return !(v[0] == iy && v[1] == ix);
                 }) )
@@ -99,7 +98,6 @@ template<typename _Ty,
                  ( last_v[0]     == curr_v[0] )                                    );
       };
 
-      size_t x( x_to ), y( y_to );
       decltype( way[0] ) last_v( way[y_end] );
       d = way[y_end][2] - 1;
       y_end--;
@@ -132,7 +130,7 @@ template<typename _MatrixTy,
     {
       auto size = A.csize();
       if( size != std::size( A ) ) {
-          throw MTL_EXCEPTION( "<MTL::LU> : <matrix.size> != <matrix.csize>" );
+          throw MTL_EXCEPTION( "<mtl::lu> : <matrix.size> != <matrix.csize>" );
       }
 
       _MatrixTy L( size );
@@ -156,9 +154,9 @@ template<typename _MatrixTy,
 
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void move( detail::matrix_3xn_t<_Ty> & m_res, _Ty x0, _Ty y0, _Ty x1, _Ty y1 )
+    void move( dense::matrix_3xn_t<_Ty> & m_res, _Ty x0, _Ty y0, _Ty x1, _Ty y1 )
     {
-      detail::matrix_3xn_t<_Ty> t_tr
+      dense::matrix_3xn_t<_Ty> t_tr
       {   1,          0,       0,
           0,          1,       0,
           x1 - x0,    y1 - y0, 1   };
@@ -168,18 +166,18 @@ template<typename _Ty,
 
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void move( detail::matrix_3xn_t<_Ty> & m_res, _Ty x, _Ty y ) {
+    void move( dense::matrix_3xn_t<_Ty> & m_res, _Ty x, _Ty y ) {
       move( m_res, 0, 0, x, y );
     }
 
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void scale( detail::matrix_3xn_t<_Ty> & m_res, _Ty k_x, _Ty k_y )
+    void scale( dense::matrix_3xn_t<_Ty> & m_res, _Ty k_x, _Ty k_y )
     {
       _Ty m = m_res[0][0]*(1 - k_x);
       _Ty l = m_res[0][1]*(1 - k_y);
 
-      detail::matrix_3xn_t<_Ty> t_scl
+      dense::matrix_3xn_t<_Ty> t_scl
       {   k_x, 0,   0,
           0,   k_y, 0,
           m,   l,   1   };
@@ -189,19 +187,19 @@ template<typename _Ty,
 
 template<typename _Ty,
     is_arithmetic_t<_Ty> = true >
-    void rotate( detail::matrix_3xn_t<_Ty> & m_res, int r_ang, _Ty x, _Ty y )
+    void rotate( dense::matrix_3xn_t<_Ty> & m_res, int r_ang, _Ty x, _Ty y )
     {
       _Ty sin = std::sin(r_ang);
       _Ty cos = std::cos(r_ang);
 
-      detail::matrix_3xn_t<_Ty> t_rot
+      dense::matrix_3xn_t<_Ty> t_rot
       {   cos,                 sin,                 0,
          -sin,                 cos,                 0,
           x*(1 - cos) + y*sin, y*(1 - cos) - x*sin, 1   };
 
       m_res *= t_rot;
     }
-} // MTL
+} // mtl
 # undef MTL_NULLOPT
 # undef MTL_OPTIONAL
 #endif

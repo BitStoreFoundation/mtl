@@ -7,37 +7,41 @@
 #include <algorithm>
 
 namespace mtl {
-// insert vector to matrix if
-template<
-    class _MatrixTy,
-    class _VectorTy,
-    class _ConditionTy>
-    bool insert_if( _MatrixTy & m, _VectorTy const& v, _ConditionTy const& c) noexcept
+
+template<typename _ItrTy>
+    auto frequent( _ItrTy & fst, _ItrTy const& lst ) -> decltype( *fst )  
     {
-      for( size_t i(0); i < std::size(m); i++ )
-          if( !c(m[i]) ) return false;
-      m.push_back( v );
-      return true;
+      std::unordered_map<decltype( *fst ), size_t> unordered_map;
+      while( fst != lst )
+      {
+          if( unordered_map.find( elem ) == unordered_map.end() ) {
+              unordered_map[elem] = 1;
+          } else {
+              unordered_map[elem]++;
+          }
+          ++fst;
+      }
+      return *( std::min_element( std::begin( unordered_map ), std::end( unordered_map ) ) );
     }
 // swap if
 template<
     typename _Ty,
-    typename _ConditionTy>
-    void swap_if( _Ty & l, _Ty & r, _ConditionTy const& condition )
+    typename _CompareTy>
+    void swap_if( _Ty & l, _Ty & r, _CompareTy const& c )
     {
-      if( !condition(l, r) ) return;
+      if( !c(l, r) ) return;
       std::swap(l, r);
     }
 // min value in matrix column
 template<typename _MatrixTy>
-    auto min( _MatrixTy const& m, size_t j_pos ) -> decltype( *m.begin() )
+    auto min_element( _MatrixTy const& m, size_t j_pos ) -> decltype( *m.begin() )
     {
       if( m.empty() ) {
-          throw MTL_EXCEPTION("<mtl::min> : <matrix> is empty");
+          throw MTL_EXCEPTION("<mtl::min_element> : <matrix> is empty");
       }
       auto size = m.csize();
       if( size <= j_pos ) {
-          throw MTL_EXCEPTION("<mtl::min> : <matrix.csize> <= <j_pos>");
+          throw MTL_EXCEPTION("<mtl::min_element> : <matrix.csize> <= <j_pos>");
       }
       auto first = m.cbegin();
       auto last = m.cend();
@@ -51,14 +55,14 @@ template<typename _MatrixTy>
     }
 // max value in matrix column
 template<typename _MatrixTy>
-    auto max( _MatrixTy const& m, size_t j_pos ) -> decltype( *m.begin() )
+    auto max_element( _MatrixTy const& m, size_t j_pos ) -> decltype( *m.begin() )
     {
       if( m.empty() ) {
-          throw MTL_EXCEPTION("<mtl::max> : <matrix> is empty");
+          throw MTL_EXCEPTION("<mtl::max_element> : <matrix> is empty");
       }
       auto size = m.csize();
       if( size <= j_pos ) {
-          throw MTL_EXCEPTION("<mtl::max> : <matrix.csize> <= <j_pos>");
+          throw MTL_EXCEPTION("<mtl::max_element> : <matrix.csize> <= <j_pos>");
       }
       auto first = m.cbegin();
       auto last = m.cend();
@@ -72,10 +76,10 @@ template<typename _MatrixTy>
     }
 // min & max value in matrix column
 template<typename _MatrixTy>
-    auto minmax( _MatrixTy const& m, size_t j_pos )
-      -> std::pair<decltype( min( m, j_pos ) ), decltype( max( m, j_pos ) )>
+    auto minmax_element( _MatrixTy const& m, size_t j_pos )
+      -> std::pair<decltype( min_element( m, j_pos ) ), decltype( max_element( m, j_pos ) )>
     {
-      return { min( m, j_pos ), max( m, j_pos ) };
+      return { min_element( m, j_pos ), max_element( m, j_pos ) };
     }
 } // mtl
 #endif
