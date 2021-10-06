@@ -13,63 +13,63 @@
 namespace mtl { namespace dense {
 
 template<
-	  typename _Ty,
+    typename _Ty,
     size_t,
     typename = elem_traits<typename std::remove_pointer<_Ty>::type> >
-	  class vector;
+    class vector;
 // private members types of vector
 template<
-	  typename _Ty,
-	  size_t size>
-  	struct private_types_list< vector<_Ty, size> >
-	  {
-	    using impl_t      = vector<_Ty, size>;
-	    using container_t = std::array<_Ty, size>;
-	  };
+    typename _Ty,
+    size_t size>
+    struct private_types_list< vector<_Ty, size> >
+    {
+      using impl_t      = vector<_Ty, size>;
+      using container_t = std::array<_Ty, size>;
+    };
 // vector accessor
-	  MTL_DECLARE_ACCESSOR( vector_accessor )
+    MTL_DECLARE_ACCESSOR( vector_accessor )
 // vector mixing
 template<
-	  typename _Ty,
-	  size_t size,
-	  typename _ElemTraitsTy>
-	  using vec_mixing_list_t = mixing_list
+    typename _Ty,
+    size_t size,
+    typename _ElemTraitsTy>
+    using vec_mixing_list_t = mixing_list
     <
       add_base_methods< vector_accessor< private_types_list< vector<_Ty, size> > > >,
-	    add_iterators< vector_accessor< private_types_list< vector<_Ty, size> > > >,
-	    add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
+      add_iterators< vector_accessor< private_types_list< vector<_Ty, size> > > >,
+      add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
       add_non_equalable< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
       add_sum< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
       add_sum< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
       add_difference< vector<_Ty, size>, vector<typename _ElemTraitsTy::type_t, size> >,
       add_difference< vector<_Ty, size>, vector<typename _ElemTraitsTy::pointer_t, size> >,
       add_division_by_value< vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::type_t, size> >,
-	    add_division_by_value< vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::pointer_t, size> >
+      add_division_by_value< vector<_Ty, size>, _ElemTraitsTy, vector<typename _ElemTraitsTy::pointer_t, size> >
     >;
 // vector container
 template<
-	  typename _Ty,
-	  size_t col_size,
+    typename _Ty,
+    size_t col_size,
     typename _ElemTraitsTy>
-	  class vector final : public vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>
+    class vector final : public vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>
     {
       static_assert(
         !is_null_size_v<col_size>,
-		    "< mtl::vector<_Ty, size_t> > : <col_size> == <0>"
-	    );
+        "< mtl::vector<_Ty, size_t> > : <col_size> == <0>"
+      );
 
-	    using private_types_list_t = private_types_list< vector<_Ty, col_size> >;
-	    using container_t          = typename private_types_list_t::container_t;
+      using private_types_list_t = private_types_list< vector<_Ty, col_size> >;
+      using container_t          = typename private_types_list_t::container_t;
 
-	    friend struct vector_accessor<private_types_list_t>;
+      friend struct vector_accessor<private_types_list_t>;
 public : // definitions
       using type_t           = typename _ElemTraitsTy::type_t;
       using pointer_t        = typename _ElemTraitsTy::pointer_t;
       using const_pointer_t  = const type_t*;
       using reference_t      = typename _ElemTraitsTy::reference_t;
       using init_list_t      = std::initializer_list<_Ty> const&;
-	    using iterator_t       = typename container_t::iterator;
-	    using const_iterator_t = typename container_t::const_iterator;
+      using iterator_t       = typename container_t::iterator;
+      using const_iterator_t = typename container_t::const_iterator;
 private :
       container_t container_;
 public :
@@ -263,24 +263,24 @@ public :
             return container_[j];
         }
       }
-	  }; // end vector container
+    }; // end vector container
 // matrix container
 template<
-	  typename _Ty = float,
-	  size_t = 3,
-	  typename = elem_traits<_Ty> >
-	  class matrix;
+    typename _Ty = float,
+    size_t = 3,
+    typename = elem_traits<_Ty> >
+    class matrix;
 // private members types of matrix
 template<
-	  typename _Ty,
-	  size_t size>
-	  struct private_types_list< matrix<_Ty, size> >
-	  {
-	    using impl_t      = matrix<_Ty, size>;
-	    using container_t = std::vector<_Ty>;
-	  };
+    typename _Ty,
+    size_t size>
+    struct private_types_list< matrix<_Ty, size> >
+    {
+      using impl_t      = matrix<_Ty, size>;
+      using container_t = std::vector<_Ty>;
+    };
 // matrix accessor
-	  MTL_DECLARE_ACCESSOR( matrix_accessor )
+    MTL_DECLARE_ACCESSOR( matrix_accessor )
 // matrix mixing list
 template<
     typename _MatrixTy,
@@ -288,43 +288,43 @@ template<
     using mtx_mixing_list_t = mixing_list
     <
       add_base_methods< matrix_accessor< private_types_list<_MatrixTy> > >,
-	    add_iterators< matrix_accessor< private_types_list<_MatrixTy> > >,
-	    add_non_equalable< _MatrixTy >,
-	    add_sum< _MatrixTy >,
+      add_iterators< matrix_accessor< private_types_list<_MatrixTy> > >,
+      add_non_equalable< _MatrixTy >,
+      add_sum< _MatrixTy >,
       add_difference< _MatrixTy >,
       add_division_by_value< _MatrixTy, _ElemTraitsTy >
-	  >;
+    >;
 // matrix container
 template<
-	  typename _Ty,
-	  size_t col_size,
-	  typename _ElemTraitsTy>
-	  class matrix final : public mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>
-	  {
+    typename _Ty,
+    size_t col_size,
+    typename _ElemTraitsTy>
+    class matrix final : public mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>
+    {
       static_assert(
         !std::is_pointer_v<_Ty>,
-		    "< mtl::matrix<_Ty, size_t> > : no specialization of class for pointer"
+        "< mtl::matrix<_Ty, size_t> > : no specialization of class for pointer"
       );
 
       static_assert(
         !is_null_size_v<col_size>,
-		    "< mtl::matrix<_Ty, size_t> > : <col_size> == <0>"
-	    );
+        "< mtl::matrix<_Ty, size_t> > : <col_size> == <0>"
+      );
 
-	    using private_types_list_t = private_types_list< matrix<_Ty, col_size> >;
-	    using container_t          = typename private_types_list_t::container_t;
+      using private_types_list_t = private_types_list< matrix<_Ty, col_size> >;
+      using container_t          = typename private_types_list_t::container_t;
 
-	    friend struct matrix_accessor<private_types_list_t>;
-	    friend class  vector<_Ty*, col_size>;
+      friend struct matrix_accessor<private_types_list_t>;
+      friend class  vector<_Ty*, col_size>;
 public :
-	    using add_multiplying_by_value<matrix<_Ty, col_size>, _ElemTraitsTy>::operator*;
+      using add_multiplying_by_value<matrix<_Ty, col_size>, _ElemTraitsTy>::operator*;
       using ptrs_vector_t    = vector<_Ty*, col_size>;
       using vector_t         = vector<_Ty, col_size>;
       using type_t           = typename _ElemTraitsTy::type_t;
       using pointer_t        = typename _ElemTraitsTy::pointer_t;
-	    using const_pointer_t  = const type_t*;
-	    using iterator_t       = typename container_t::iterator;
-	    using const_iterator_t = typename container_t::const_iterator;
+      using const_pointer_t  = const type_t*;
+      using iterator_t       = typename container_t::iterator;
+      using const_iterator_t = typename container_t::const_iterator;
   template<typename Ty = _Ty>
       using init_list_t = std::initializer_list<Ty> const&;
 private :
@@ -340,13 +340,13 @@ public :
         : container_( std::move( other.container_ ) )
       { }
 
-	    explicit matrix( size_t size, size_t value = 0 )
+      explicit matrix( size_t size, size_t value = 0 )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
-		    , container_( size*col_size )
-	    {
-		    if( value )
-			      for( size_t i(0); i < size*col_size; i++ )
-				        container_[i] = value;
+        , container_( size*col_size )
+      {
+        if( value )
+            for( size_t i(0); i < size*col_size; i++ )
+                container_[i] = value;
       }
 
       matrix( init_list_t<> list )
