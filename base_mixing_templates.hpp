@@ -42,11 +42,11 @@ public :
       void clear() noexcept 
       { accessor_t::container( derived_ ).clear(); }
 
-  template<is_method_exists_v< container_t, method_data_t<container_t> > = true>
+  template<is_method_exists_t< container_t, method_data_t<container_t> > = true>
       auto data() noexcept -> decltype( accessor_t::container( derived_ ).data() ) 
       { return accessor_t::container( derived_ ).data(); }
 
-  template<is_method_exists_v< container_t, method_data_t<container_t> > = true>
+  template<is_method_exists_t< container_t, method_data_t<container_t> > = true>
       auto data() const noexcept -> decltype( accessor_t::container( derived_ ).data() ) 
       { return accessor_t::container( derived_ ).data(); }
     };
