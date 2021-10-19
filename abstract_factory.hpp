@@ -3,20 +3,7 @@
 #define MTL_ABSTRACT_FACTORY_HPP
 
 #include "exception.hpp"
-
-#ifdef CXX_BUILDER_CXX17
-# include <boost/variant.hpp>
-# include <boost/optional.hpp>
-# define MTL_NULLOPT boost::none
-# define MTL_VARIANT(type) boost::variant<type>
-# define MTL_OPTIONAL(type) boost::optional<type>
-#else
-# include <variant>
-# include <optional>
-# define MTL_NULLOPT std::nullopt
-# define MTL_VARIANT(type) std::variant<type>
-# define MTL_OPTIONAL(type) std::optional<type>
-#endif
+#include "types.hpp"
 
 #include <unordered_map>
 #include <functional>
@@ -30,8 +17,8 @@ template<
     {
 public :
       using key_t       = _KeyTy;
-      using var_t       = MTL_VARIANT( std::shared_ptr<_ArgsTy> ... );
-      using o_var_t     = MTL_OPTIONAL( var_t );
+      using var_t       = detail::variant_t<std::shared_ptr<_ArgsTy> ... >;
+      using o_var_t     = detail::optional_t<var_t>;
       using creator_t   = std::function<var_t()>;
       using creators_t  = std::unordered_map<key_t, creator_t>;
       using init_list_t = std::initializer_list< std::pair<key_t, creator_t> > const&;
@@ -52,10 +39,10 @@ public :
       void register_class( key_t const& by_key, creator_t const& creator ) 
       {
         if( !creator ) {
-            throw MTL_EXCEPTION( "<abstract_factory::register_class> : <creator> is empty wrap of functional object" );
+            throw detail::exception_t( "<abstract_factory::register_class> : <creator> is empty wrap of functional object" );
         }
         if( creators_.find( by_key ) != creators_.end() ) {
-            throw MTL_EXCEPTION( "<abstract_factory::register_class> : <by_key> already exsist" );
+            throw detail::exception_t( "<abstract_factory::register_class> : <by_key> already exsist" );
         }
         creators_[by_key] = creator;
       }
@@ -64,7 +51,7 @@ public :
       void register_class( key_t const& by_key ) 
       {
         if( creators_.find( by_key ) != creators_.end() ) {
-            throw MTL_EXCEPTION( "<abstract_factory::register_class> : <by_key> already exsist" );
+            throw detail::exception_t( "<abstract_factory::register_class> : <by_key> already exsist" );
         }
         creators_[by_key] = &creator<_ObjTy>;
       }
@@ -77,12 +64,8 @@ public :
 private :
 
   template<class _ObjTy>
-      static var_t creator() { 
-        return std::make_shared<_ObjTy>(); 
-      } 
+      static var_t creator() 
+      { return std::make_shared<_ObjTy>(); } 
     };
 } // mtl
-#undef MTL_NULLOPT
-#undef MTL_VARIANT
-#undef MTL_OPTIONAL
 #endif

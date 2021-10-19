@@ -8,29 +8,51 @@
 namespace mtl { namespace sparse {
 
 template<typename _Ty>
-    std::ostream & operator << ( std::ostream & o, sparse_vector<_Ty> v )
+    std::ostream & operator << ( std::ostream & o, vector<_Ty> v )
     {
-      o << "[" << size << "]{";
-      std::ostream_iterator<_Ty> out_itr ( o, " " );
-      std::copy( v.begin(), v.end(), out_itr );
-      o << "}" << std::endl;
+      using std::endl;
+      o << "sparse : [" << v.amount() << "]";
+      if( v.sparse() ) {
+          o << "{ ";
+          for( auto const& elem : v )
+          {
+              if constexpr( std::is_pointer_v<_Ty> ) {
+                  o << *elem.second << " ";
+              } else {
+                  o <<  elem.second << " ";
+              }
+          }
+          o << "}" << endl;
+      }
+      auto size = std::size( v );
+      o << "[" << size << "]";
+      o << "{ ";
+      for( std::size_t i(0); i < size; i++ )
+          o << v[i] << " ";
+      o << "}" << endl;/**/
       return o;
     }
 
 template<typename _Ty>
     std::ostream & operator << ( std::ostream & o, matrix<_Ty> m ) {
-	  using std::endl;
-	  o << "[" << m.size()  << "]" << endl;
-	  o << "[" << m.csize() << "]" << endl;
-	  for(size_t i = 0; i < std::size( m ); i++)
-	  {
-		  o << "{ ";
-		  std::ostream_iterator<_Ty> out_itr ( o, " " );
-		  vector<_Ty, size> v = m[i];
-		  std::copy( v.begin(), v.end(), out_itr );
-		  o << "}" << endl;
-	  }
-	  return o;
-	}
+      using std::endl;
+      o << "[" << m.size()  << "]" << endl;
+      o << "[" << m.csize() << "]" << endl;
+      if( m.sparse() ) {
+          o << "{ ";
+          for( auto const& elem : m )
+              o << elem.second << " ";
+          o << "}" << endl;
+      }
+      for( std::size_t i(0); i < std::size( m ); i++ )
+      {
+          o << "{ ";
+          vector<_Ty> v = m[i];
+          for( std::size_t j(0); j < std::size( v ); j++ )
+              o << v[j] << " ";
+          o << "}" << endl;
+      }
+      return o;
+    }
 } } // mtl::sparse
 #endif

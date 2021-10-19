@@ -5,7 +5,6 @@
 #define MTL_DENSE_MATRIX_HPP
 
 #include "../base_mixing_templates.hpp"
-#include "../type_traits.hpp"
 
 #include <vector>
 #include <array>
@@ -14,24 +13,41 @@ namespace mtl { namespace dense {
 
 template<
     typename _Ty,
-    size_t,
+    std::size_t,
     typename = elem_traits<typename std::remove_pointer<_Ty>::type> >
     class vector;
+
+template<
+    typename _Ty = float,
+    std::size_t = 3,
+    typename = elem_traits<_Ty> >
+    class matrix;
+} // dense
 // private members types of vector
 template<
     typename _Ty,
-    size_t size>
-    struct private_types_list< vector<_Ty, size> >
+    std::size_t size>
+    struct private_types_list< dense::vector<_Ty, size> >
     {
-      using impl_t      = vector<_Ty, size>;
+      using impl_t      = dense::vector<_Ty, size>;
       using container_t = std::array<_Ty, size>;
     };
+// private members types of matrix
+template<
+    typename _Ty,
+    std::size_t size>
+    struct private_types_list< dense::matrix<_Ty, size> >
+    {
+      using impl_t      = dense::matrix<_Ty, size>;
+      using container_t = std::vector<_Ty>;
+    };
+namespace dense {
 // vector accessor
     MTL_DECLARE_ACCESSOR( vector_accessor )
 // vector mixing
 template<
     typename _Ty,
-    size_t size,
+    std::size_t size,
     typename _ElemTraitsTy>
     using vec_mixing_list_t = mixing_list
     <
@@ -49,7 +65,7 @@ template<
 // vector container
 template<
     typename _Ty,
-    size_t col_size,
+    std::size_t col_size,
     typename _ElemTraitsTy>
     class vector final : public vec_mixing_list_t<_Ty, col_size, _ElemTraitsTy>
     {
@@ -62,7 +78,7 @@ template<
       using container_t          = typename private_types_list_t::container_t;
 
       friend struct vector_accessor<private_types_list_t>;
-public : // definitions
+public :
       using type_t           = typename _ElemTraitsTy::type_t;
       using pointer_t        = typename _ElemTraitsTy::pointer_t;
       using const_pointer_t  = const type_t*;
@@ -87,12 +103,12 @@ public :
       typename _MatrixTy,
       typename _EnableTy = _Ty,
       is_pointer_t<_EnableTy> = true>
-      vector( _MatrixTy const& matrix, size_t const& i )
+      vector( _MatrixTy const& matrix, std::size_t const& i )
         : vector()
       {
         if( i >= matrix.csize() )
-            throw MTL_EXCEPTION( "<vector::vector> : bad <matrix> line <index aka i> ( matrix[_index_][-] )" );
-        for( size_t j(0); j < col_size; j++ )
+            throw detail::exception_t( "<vector::vector> : bad <matrix> line <index aka i> ( matrix[_index_][-] )" );
+        for( std::size_t j(0); j < col_size; j++ )
             container_[j] = &matrix.container_[i*col_size + j];
       }
 
@@ -100,13 +116,13 @@ public :
         : vector()
       {
         if( col_size < list.size() )
-            throw MTL_EXCEPTION( "<vector::vector> : bad initializer_list <size>" );
-        size_t j( 0 );
+            throw detail::exception_t( "<vector::vector> : bad initializer_list <size>" );
+        std::size_t j( 0 );
         for( auto const& col : list )
             container_[j++] = col;
       }
 
-      size_t size() const noexcept 
+      std::size_t size() const noexcept 
       { return col_size; }
 
       vector & operator = ( vector const& other )
@@ -130,7 +146,7 @@ public :
       operator vector<Ty, col_size> ()
       {
         vector<Ty, col_size> vector;
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
             vector[i] = *container_[i];
         return vector;
       }
@@ -140,7 +156,7 @@ public :
         if( col_size != other.size() ) {
             return false;
         }
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
                 if( ( *container_[i] ) != other[i] ) {
@@ -160,7 +176,7 @@ public :
         if( col_size != other.size() ) {
             return false;
         }
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
                 if( ( *container_[i] ) != other[i] ) {
@@ -177,7 +193,7 @@ public :
 
       vector & operator += ( vector<pointer_t, col_size> const& other )
       {
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
              ( *container_[i] ) += other[i];
@@ -190,7 +206,7 @@ public :
 
       vector & operator += ( vector<type_t, col_size> const& other )
       {
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
              ( *container_[i] ) += other[i];
@@ -203,7 +219,7 @@ public :
 
       vector & operator -= ( vector<pointer_t, col_size> const& other )
       {
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
              ( *container_[i] ) -= other[i];
@@ -216,7 +232,7 @@ public :
 
       vector & operator -= ( vector<type_t, col_size> const& other )
       {
-        for( size_t i(0); i < col_size; i++ )
+        for( std::size_t i(0); i < col_size; i++ )
         {
             if constexpr( std::is_pointer_v<_Ty> ) {
              ( *container_[i] ) -= other[i];
@@ -232,18 +248,18 @@ public :
         for( auto & it : container_ )
         {
             if constexpr ( std::is_pointer_v<_Ty> ) {
-             ( *it ) += value;
+       ( *it ) *= value;
             } else {
-                it += value;
+                it *= value;
             }
         }
         return *this;
       }
 
-      reference_t operator [] ( size_t const& j )
+      reference_t operator [] ( std::size_t const& j )
       {
         if( j >= col_size ) {
-            throw MTL_EXCEPTION( "<vector::operator[]> : bad access" );
+            throw detail::exception_t( "<vector::operator[]> : bad access" );
         }
         if constexpr ( std::is_pointer_v<_Ty> ) {
             return *container_[j];
@@ -252,10 +268,10 @@ public :
         }
       }
 
-      type_t operator [] ( size_t const& j ) const
+      type_t operator [] ( std::size_t const& j ) const
       {
         if( j >= col_size ) {
-            throw MTL_EXCEPTION( "<vector::operator[] const> : bad access" );
+            throw detail::exception_t( "<vector::operator[] const> : bad access" );
         }
         if constexpr(std::is_pointer_v<_Ty>) {
             return *container_[j];
@@ -263,22 +279,7 @@ public :
             return container_[j];
         }
       }
-    }; // end vector container
-// matrix container
-template<
-    typename _Ty = float,
-    size_t = 3,
-    typename = elem_traits<_Ty> >
-    class matrix;
-// private members types of matrix
-template<
-    typename _Ty,
-    size_t size>
-    struct private_types_list< matrix<_Ty, size> >
-    {
-      using impl_t      = matrix<_Ty, size>;
-      using container_t = std::vector<_Ty>;
-    };
+  }; // end vector container
 // matrix accessor
     MTL_DECLARE_ACCESSOR( matrix_accessor )
 // matrix mixing list
@@ -297,7 +298,7 @@ template<
 // matrix container
 template<
     typename _Ty,
-    size_t col_size,
+    std::size_t col_size,
     typename _ElemTraitsTy>
     class matrix final : public mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>
     {
@@ -316,6 +317,9 @@ template<
 
       friend struct matrix_accessor<private_types_list_t>;
       friend class  vector<_Ty*, col_size>;
+
+  template<typename Ty = _Ty>
+      using init_list_t = std::initializer_list<Ty> const&;
 public :
       using add_multiplying_by_value<matrix<_Ty, col_size>, _ElemTraitsTy>::operator*;
       using ptrs_vector_t    = vector<_Ty*, col_size>;
@@ -325,8 +329,6 @@ public :
       using const_pointer_t  = const type_t*;
       using iterator_t       = typename container_t::iterator;
       using const_iterator_t = typename container_t::const_iterator;
-  template<typename Ty = _Ty>
-      using init_list_t = std::initializer_list<Ty> const&;
 private :
       mutable container_t container_;
 public :
@@ -340,43 +342,42 @@ public :
         : container_( std::move( other.container_ ) )
       { }
 
-      explicit matrix( size_t size, size_t value = 0 )
+      explicit matrix( std::size_t size, std::size_t value = 0 )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
-        , container_( size*col_size )
-      {
-        if( value )
-            for( size_t i(0); i < size*col_size; i++ )
-                container_[i] = value;
-      }
+        , container_( size*col_size, value )
+      { }
 
       matrix( init_list_t<> list )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
-        , container_( list.size() )
-      { this->operator=( list ); }
+        , container_( list )
+      {
+        if( col_size > list.size() || list.size()%col_size != 0 )
+            throw detail::exception_t( "<dense::matrix::matrix(init_list<_Ty>)> : bad <initializer_list> size" );
+      }
 
       matrix( init_list_t<vector_t> list )
         : mtx_mixing_list_t<matrix<_Ty, col_size>, _ElemTraitsTy>()
         , container_( list.size() )
       { this->operator=( list ); }
 
-      size_t size() const noexcept 
+      std::size_t size() const noexcept 
       { return std::size( container_ )/col_size; }
 
-      size_t csize() const noexcept 
+      std::size_t csize() const noexcept 
       { return col_size; }
 
-      void resize( size_t size )
+      void resize( std::size_t size )
       {
         if( size == this->size() )
             return;
         if( size%col_size != 0 )
-            throw MTL_EXCEPTION( "<matrix::resize> : bad new size, <size>%<col_size> != <0>" );
+            throw detail::exception_t( "<matrix::resize> : bad new size, <size>%<col_size> != <0>" );
         container_.resize( size*col_size );
       }
 
       void merge( matrix const& other ) 
       {
-        for( size_t i(0); i < std::size( other ); i++ )
+        for( std::size_t i(0); i < std::size( other ); i++ )
             push_back( other[i] );
       }
 
@@ -387,29 +388,27 @@ public :
       { container_.insert( container_.end(), vector.begin(), vector.end() ); }
 
   // push vector to the end of matrix if
-template<typename _CompareTy>
-    bool push_back_if( vector_t const& v, _CompareTy const& c )
-    {
-      for( size_t i(0); i < std::size( m ); i++ ) 
-          if( !c( m[i] ) ) 
-              return false;
-      push_back( v );
-      return true;
-    }
-
-      void insert( vector_t vector, size_t i = 0 )
+  template<typename _CompareTy>
+      bool push_back_if( vector_t const& v, _CompareTy const& c )
       {
-        if( i >= container_.size() ) {
-            throw MTL_EXCEPTION( "<matrix::insert> : bad insert position" );
-        }
+        for( std::size_t i(0); i < size(); i++ )
+            if( !c( this->operator[]( i ) ) )
+                return false;
+        push_back( v );
+        return true;
+      }
+
+      void insert( vector_t vector, std::size_t i = 0 )
+      {
+        if( i >= container_.size() )
+            throw detail::exception_t( "<matrix::insert> : bad insert position" );
         container_.insert( container_.begin() + i*col_size, vector.begin(), vector.end() );
       }
 
-      void erase( size_t i )
+      void erase( std::size_t i )
       {
-        if( i >= container_.size() ) {
-            throw MTL_EXCEPTION( "<matrix::erase> : bad erase position" );
-        }
+        if( i >= container_.size() )
+            throw detail::exception_t( "<matrix::erase> : bad erase position" );
         auto it( container_.begin() + i*col_size );
         container_.erase( it, it + col_size );
       }
@@ -419,14 +418,14 @@ template<typename _CompareTy>
 
       matrix & operator += ( matrix const& other )
       {
-        for( size_t i(0); i < container_.size(); i++ )
+        for( std::size_t i(0); i < container_.size(); i++ )
             container_[i] += other.container_[i];
         return *this;
       }
 
       matrix & operator -= ( matrix const& other )
       {
-        for( size_t i(0); i < container_.size(); i++ )
+        for( std::size_t i(0); i < container_.size(); i++ )
             container_[i] -= other.container_[i];
         return *this;
       }
@@ -446,7 +445,7 @@ template<typename _CompareTy>
         return *this;
       }
 
-  template<size_t col_size_>
+  template<std::size_t col_size_>
       matrix<_Ty, col_size_> operator * ( matrix<_Ty, col_size_> const& other ) 
       {
         matrix<_Ty, col_size_> r( size() );
@@ -471,7 +470,7 @@ template<typename _CompareTy>
       matrix & operator = ( init_list_t<> list )
       {
         if( col_size > list.size() || list.size()%col_size != 0 )
-            throw MTL_EXCEPTION( "<matrix::matrix> : bad <initializer_list> size" );
+            throw detail::exception_t( "<dense::matrix::operator=(init_list<_Ty>)> : bad <initializer_list> size" );
         std::copy( list.begin(), list.end(), container_.begin() );
         return *this;
       }
@@ -479,42 +478,36 @@ template<typename _CompareTy>
       matrix & operator = ( init_list_t<vector_t> list )
       {
         for( auto const& vector : list )
-            insert( vector );
+            push_back( vector );
         return *this;
       }
 
-      ptrs_vector_t operator [] ( size_t const& i )
+      ptrs_vector_t operator [] ( std::size_t const& i )
       {
         if( i >= std::size( container_ ) )
-            throw MTL_EXCEPTION( "<matrix::operator[]> : <i> >= <col_size> | <matrix> is empty" );
+            throw detail::exception_t( "<matrix::operator[]> : <i> >= <col_size> | <matrix> is empty" );
         return vector<_Ty*, col_size>( *this, i );
       }
 
-      const ptrs_vector_t operator [] ( size_t const& i ) const
+      const ptrs_vector_t operator [] ( std::size_t const& i ) const
       {
         if( i >= std::size( container_ ) )
-            throw MTL_EXCEPTION( "<matrix> : <i> >= <col_size> | <matrix> is empty" );
+            throw detail::exception_t( "<matrix> : <i> >= <col_size> | <matrix> is empty" );
         return vector<_Ty*, col_size>( *this, i );
       }
 private :
 
-  template<size_t col_size_>
+  template<std::size_t col_size_>
       void multiply( _Ty *r, matrix<_Ty, col_size_> const& m )
       {
         if( col_size != std::size( m ) ) {
-            throw MTL_EXCEPTION( "<matrix::multiply> : col1 != row2" );
+            throw detail::exception_t( "<matrix::multiply> : col1 != row2" );
         }
         auto m_ = m.data();
-        for( size_t i(0); i < std::size( container_ ); i++ )
-        {
-            for( size_t j(0); j < col_size_; j++ ) 
-            {
-                for( size_t k(0); k < col_size; k++ ) 
-                {
+        for( std::size_t i(0); i < std::size( container_ ); i++ )
+            for( std::size_t j(0); j < col_size_; j++ ) 
+                for( std::size_t k(0); k < col_size; k++ ) 
                     r[i*col_size_ + j] += container_[i*col_size + k]*m_[k*col_size_ + j];
-                }
-            }
-        }
       }
     }; // end matrix container
 // deduction guide

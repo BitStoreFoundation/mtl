@@ -4,10 +4,11 @@
 #define MTL_BASE_MIXING_TEMPLATES_HPP
 
 #include "exception.hpp"
+#include "type_traits.hpp"
 // macro for creating an accessor
 #define MTL_DECLARE_ACCESSOR(name) \
 template<typename _PrivateTysTy> \
-    struct name \
+    struct name##_accessor \
     { \
       using private_types_t = _PrivateTysTy; \
       static typename _PrivateTysTy::container_t& container( typename private_types_t::impl_t* impl ) \
@@ -28,7 +29,6 @@ template<typename _AccessorTy>
 public :
       using accessor_t  = _AccessorTy;
       using derived_t   = typename _AccessorTy::private_types_t::impl_t;
-      using container_t = typename _AccessorTy::private_types_t::container_t;
 private :
       derived_t *derived_;
 public :
@@ -36,19 +36,11 @@ public :
         : derived_( static_cast<derived_t*>( this ) )
       { }
 
-      size_t empty() const noexcept 
+      bool empty() const noexcept 
       { return accessor_t::container( derived_ ).empty(); }
 
       void clear() noexcept 
       { accessor_t::container( derived_ ).clear(); }
-
-  template<is_method_exists_t< container_t, method_data_t<container_t> > = true>
-      auto data() noexcept -> decltype( accessor_t::container( derived_ ).data() ) 
-      { return accessor_t::container( derived_ ).data(); }
-
-  template<is_method_exists_t< container_t, method_data_t<container_t> > = true>
-      auto data() const noexcept -> decltype( accessor_t::container( derived_ ).data() ) 
-      { return accessor_t::container( derived_ ).data(); }
     };
 
 template<typename _AccessorTy>
@@ -169,7 +161,7 @@ template<
       _DerivedTy& operator /= ( typename _ElemTraitsTy::type_t const& value )
       {
         if(value <= 0) {
-            throw MTL_EXCEPTION( "bad operation : <value> = <0>" );
+            throw detail::exception_t( "bad operation : <value> = <0>" );
         }
         return *this *= (1.0/value);
       }
@@ -177,7 +169,7 @@ template<
       _ReturnTy operator / ( typename _ElemTraitsTy::type_t const& value ) const
       {
         if(value <= 0) {
-            throw MTL_EXCEPTION( "bad operation : <value> = <0>" );
+            throw detail::exception_t( "bad operation : <value> = <0>" );
         }
         _ReturnTy cpy = static_cast<const _DerivedTy&>( *this );
         return cpy *= ( 1.0/value );

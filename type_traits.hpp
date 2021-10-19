@@ -13,29 +13,27 @@ template<typename = void>
 template<>
     struct is_string<const char*> : std::true_type { };
 
-template<size_t size>
+template<std::size_t size>
     struct is_null_size : std::false_type { };
 
 template<>
     struct is_null_size<0> : std::true_type { };
 
 template<
-    typename, 
+    typename,
     typename = void>
-    struct is_method_exists: std::false_type { };
-// _Ty::data() 
+    struct is_method_data_exists: std::false_type { };
+/* 
 template<typename _Ty>
-    using method_data_t = std::enable_if_t<
-      std::is_same_v< decltype( std::declval<_Ty>().data() ), void > 
-    >;
-// is _Ty::data() exists 
-template<typename _Ty>
-    struct is_method_exists< _Ty, method_data_t<_Ty> > : std::true_type { };
+    struct is_method_data_exists< 
+      _Ty, 
+      std::enable_if_t<
+        std::is_same_v< decltype( std::declval<_Ty>().data() ), void > 
+      > 
+    > : std::true_type { };*/
 
-template<
-    typename _Ty,
-    typename _MethodTy>
-    constexpr bool is_method_exists_v = is_method_exists<_Ty, _MethodTy>::value;
+template<typename _MethodTy>
+    constexpr bool is_method_data_exists_v = is_method_data_exists<_MethodTy>::value;
 
 template<
     typename _Ty,
@@ -57,13 +55,8 @@ template<typename>
 template<class _Ty>
     inline constexpr bool is_string_v = is_string<_Ty>::value;
 
-template<size_t size>
+template<std::size_t size>
     inline constexpr bool is_null_size_v = is_null_size<size>::value;
-
-template<
-    typename _Ty,
-    typename _MethodTy>>
-    using is_method_exists_t = std::enable_if_t<is_method_exists_v<_Ty, _MethodTy>, bool>;
 
 template<typename _Ty>
     using is_arithmetic_t = std::enable_if_t<std::is_arithmetic_v<_Ty>, bool>;
