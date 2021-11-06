@@ -1,19 +1,19 @@
 #pragma once
-#ifndef MTL_SPARSE_IO_HPP
-#define MTL_SPARSE_IO_HPP
-
-#include "matrix.hpp"
+#ifndef MTL_NUMERIC_SPARSE_HPP
+#define MTL_NUMERIC_SPARSE_HPP
+// mtl
+#include "sparse_matrix.hpp"
+// stl
 #include <iostream>
 
-namespace mtl { namespace sparse {
+namespace mtl { namespace numeric {
 
 template<typename _Ty>
-    std::ostream & operator << ( std::ostream & o, vector<_Ty> v )
+    std::ostream & operator << ( std::ostream & o, vector_t<_Ty> const& v )
     {
       using std::endl;
-      o << "sparse : [" << v.amount() << "]";
       if( v.sparse() ) {
-          o << "{ ";
+          o << "sparse : [" << v.amount() << "]{ ";
           for( auto const& elem : v )
           {
               if constexpr( std::is_pointer_v<_Ty> ) {
@@ -34,9 +34,9 @@ template<typename _Ty>
     }
 
 template<typename _Ty>
-    std::ostream & operator << ( std::ostream & o, matrix<_Ty> m ) {
+    std::ostream & operator << ( std::ostream & o, matrix_t<_Ty> const& m ) {
       using std::endl;
-      o << "[" << m.size()  << "]" << endl;
+      o << "[" << m.size()  << "]";
       o << "[" << m.csize() << "]" << endl;
       if( m.sparse() ) {
           o << "{ ";
@@ -47,12 +47,12 @@ template<typename _Ty>
       for( std::size_t i(0); i < std::size( m ); i++ )
       {
           o << "{ ";
-          vector<_Ty> v = m[i];
+          auto v = m[i];
           for( std::size_t j(0); j < std::size( v ); j++ )
               o << v[j] << " ";
           o << "}" << endl;
       }
       return o;
     }
-} } // mtl::sparse
+}
 #endif

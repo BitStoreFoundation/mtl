@@ -31,9 +31,8 @@ public :
 
       abstract_factory( init_list_t list ) 
       {
-        for(auto const& pair : list) {
+        for( auto const& pair : list )
             creators_.emplace( pair );
-        }
       }
 
       void register_class( key_t const& by_key, creator_t const& creator ) 

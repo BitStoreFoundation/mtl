@@ -3,11 +3,10 @@
 #pragma once
 #ifndef MTL_ALGORITHM_HPP
 #define MTL_ALGORITHM_HPP
-
+// mtl
 #include "exception.hpp"
-
+// std
 #include <algorithm>
-#include <unordered_map>
 
 namespace mtl {
 // swap if

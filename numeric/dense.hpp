@@ -1,16 +1,17 @@
 #pragma once
-#ifndef MTL_DENSE_IO_HPP
-#define MTL_DENSE_IO_HPP
-
-#include "matrix.hpp"
+#ifndef MTL_NUMERIC_DENSE_IO_HPP
+#define MTL_NUMERIC_DENSE_IO_HPP
+// mtl
+#include "dense_matrix.hpp"
+// stl
 #include <iostream>
 
-namespace mtl { namespace dense {
+namespace mtl { namespace numeric {
 
 template<
     typename _Ty,
     size_t size>
-    std::ostream & operator << ( std::ostream & o, vector<_Ty, size> v )
+    std::ostream & operator << ( std::ostream & o, vector_n_t<_Ty, size> v )
     {
       o << "[" << size << "]{";
       std::ostream_iterator<_Ty> out_itr ( o, " " );
@@ -22,7 +23,7 @@ template<
 template<
     typename _Ty,
     size_t size>
-    std::ostream & operator << ( std::ostream & o, matrix<_Ty, size> m ) {
+    std::ostream & operator << ( std::ostream & o, matrix_n_t<_Ty, size> m ) {
 	  using std::endl;
 	  o << "[" << m.size()  << "]" << endl;
 	  o << "[" << m.csize() << "]" << endl;
@@ -36,5 +37,5 @@ template<
 	  }
 	  return o;
 	}
-} } // mtl::dense
+} }
 #endif

@@ -4,11 +4,11 @@
 #ifndef MTL_EXCEPTION_HPP
 #define MTL_EXCEPTION_HPP
 // use std exception
-# ifndef MTL_USE_ANY_EXCEPTION
-#  include <exception>
-#  include <stdexcept>
-namespace mtl { namespace detail {
-   using exception_t = std::runtime_error;
-} }
-# endif
+#ifndef MTL_USING_OTHER_EXCEPTION
+# include <exception>
+# include <stdexcept>
+
+namespace mtl { using exception_t = std::runtime_error; }
+#endif
+
 #endif
