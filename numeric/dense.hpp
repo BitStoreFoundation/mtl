@@ -6,7 +6,7 @@
 // stl
 #include <iostream>
 
-namespace mtl { namespace numeric {
+namespace mtl::numeric {
 
 template<
     typename _Ty,

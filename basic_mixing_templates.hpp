@@ -27,14 +27,13 @@ template<
     typename _TraitsTy = access_traits<_DerivedTy> >
     struct default_accessor
     {
-      static typename _TraitsTy::container_t& container( _DerivedTy *impl )
+      static typename _TraitsTy::container_t& container( _DerivedTy *const impl )
       { return impl->container_; }
     };
 // tags
-    struct default_rule_t { };
-    struct no_const_t { };
+    struct default_t { };
+    struct no_t { };
     struct only_const_t { }; 
-    struct with_const_t { };
 //
 template<
     typename _DerivedTy,
@@ -44,42 +43,37 @@ template<
     struct mixing_traits
     {
       using derived_t  = _DerivedTy;
+      using arg_t      = _ArgTy; 
       using return_t   = _ReturnTy;
       using accessor_t = _AccessorTy;
-      using arg_t      = _ArgTy; 
     };
 
 template<
     typename _DerivedTy,
-    typename _RuleTagTy = default_rule_t,
-    typename _TraitsTy  = mixing_traits<_DerivedTy> >
-    struct access_rule { };
+    typename _SpecTagTy = default_t>
+    struct index { };
 
+template<typename _DerivedTy>
+    struct index<_DerivedTy, default_t>
+    { 
+      std::size_t operator () ( _DerivedTy const* impl, std::size_t const& key )
+      { return key; }
+    };
+    
 template<
     typename _DerivedTy,
-    typename _TraitsTy>
-    struct access_rule<_DerivedTy, default_rule_t, _TraitsTy>
-    {
-      using accessor_t = typename _OverloadTraitsTy::accessor_t;
-
-      access_rule() = default;
-
-      auto operator () ( _DerivedTy *impl, std::size_t const& key )
-        -> decltype( accessor_t::container( impl )[key] )& 
-      { return accessor_t::container( impl ).at( key ); };
-
-      auto operator () ( _DerivedTy const* impl, std::size_t const& key ) const
-        -> decltype( accessor_t::container( impl )[key] )& 
-      { return accessor_t::container( impl ).at( key ); };
-    };
+    typename _TagTy     = default_t,
+    typename _SpecTagTy = default_t,
+    typename _TraitsTy  = mixing_traits<_DerivedTy>,
+    typename _IndexTy   = index<_DerivedTy, _SpecTagTy> >
+    struct add_access_by_key { };
 // mixing for container class
 template<
     typename _DerivedTy,
-    typename _TagTy     = with_const_t,
-    typename _RuleTagTy = default_rule_t,
-    typename _TraitsTy  = mixing_traits<_DerivedTy>,
-    typename _RuleTy    = access_rule<_DerivedTy, _RuleTagTy, _TraitsTy> >
-    struct add_access_by_key
+    typename _TagTy,
+    typename _TraitsTy,
+    typename _IndexTy>
+    struct add_access_by_key<_DerivedTy, _TagTy, default_t, _TraitsTy, _IndexTy>
     {
       using accessor_t = typename _TraitsTy::accessor_t;
       // declare derived_ and add_access_by_key() = default
@@ -89,23 +83,22 @@ template<
       typename KeywordTy,
       typename TagTy = _TagTy,
       std::enable_if_t<
-        std::is_same_v<TagTy, with_const_t> ||
-        std::is_same_v<TagTy, no_const_t>, 
+        std::is_same_v<TagTy, default_t>, 
         bool> = true >
       auto operator [] ( KeywordTy const& key )
-        -> decltype( _RuleTy()( derived_, key ) )
-      { return _RuleTy()( derived_, key ); }
+        -> decltype( accessor_t::container( derived_ )[key] )&
+      { return accessor_t::container( derived_ ).at( _IndexTy()( derived_, key ) ); }
 
   template<
       typename KeywordTy,
       typename TagTy = _TagTy,
       std::enable_if_t<
-        std::is_same_v<TagTy, with_const_t> ||
+        std::is_same_v<TagTy, default_t> ||
         std::is_same_v<TagTy, only_const_t>, 
         bool> = true >
       auto operator [] ( KeywordTy const& key ) const
-        -> decltype( _RuleTy()( derived_, key ) )
-      { return _RuleTy()( derived_, key ); }
+        -> decltype( accessor_t::container( derived_ )[key] ) const&
+      { return accessor_t::container( derived_ ).at( _IndexTy()( derived_, key ) ); }
     };
 
 template<
@@ -126,14 +119,14 @@ template<
 
 template<
     typename _DerivedTy,
-    typename _TagTy    = with_const_t,
+    typename _TagTy    = default_t,
     typename _TraitsTy = mixing_traits<_DerivedTy> >
     struct add_iterators { };
 
 template<    
     typename _DerivedTy,
     typename _TraitsTy>
-    struct add_iterators<_DerivedTy, with_const_t, _TraitsTy>
+    struct add_iterators<_DerivedTy, default_t, _TraitsTy>
     {
       using accessor_t = typename _TraitsTy::accessor_t;
       // declare derived_ and add_iterators() = default

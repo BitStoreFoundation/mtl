@@ -6,10 +6,10 @@
 // stl
 #include <iostream>
 
-namespace mtl { namespace numeric {
+namespace mtl::numeric {
 
 template<typename _Ty>
-    std::ostream & operator << ( std::ostream & o, vector_t<_Ty> const& v )
+    std::ostream & operator << ( std::ostream & o, vector_t<_Ty> v )
     {
       using std::endl;
       if( v.sparse() ) {
