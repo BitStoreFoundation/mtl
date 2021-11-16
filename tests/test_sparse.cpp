@@ -2,14 +2,7 @@
 #include "tests.hpp"
 #include "../numeric/sparse.hpp"
 
-template<typename _Ty = void>
-    struct vector_fixture { };
-
-template<typename _Ty = void>
-    struct matrix_fixture { };
-
-template<>
-    struct vector_fixture<std::ptrdiff_t>
+    struct vector_fixture
     {
 	  mtl::numeric::vector_t<std::ptrdiff_t> v;
       vector_fixture()
@@ -17,18 +10,22 @@ template<>
       { BOOST_TEST_MESSAGE( "vector construct :\n" << v << "end\n" ); }
     };
 
-template<>
-    struct matrix_fixture<std::ptrdiff_t>
+    struct matrix_fixture
     {
 	  mtl::numeric::matrix_t<std::ptrdiff_t> m;
       matrix_fixture()
-        : m( { 1, 2, 2, 4, 5, 6, 7, 8, 9 } )
-      { BOOST_TEST_MESSAGE( "matrix construct :\n" << m << "end\n" ); }
+        : m( { 1, 2, 2, 
+               4, 5, 6, 
+               7, 8, 9 } )
+      {
+        m.resize( 3 );
+        BOOST_TEST_MESSAGE( "matrix construct :\n" << m << "end\n" ); 
+      }
     };
 
 BOOST_AUTO_TEST_SUITE( test_suite_sparse_vector )
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_vector_create, vector_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_vector_create, vector_fixture )
 { try {
   BOOST_TEST_MESSAGE( "checking mtl::sparse::vector<std::ptrdiff_t> v" );
   BOOST_REQUIRE( v.frequent() == 2 );
@@ -39,7 +36,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_vector_create, vector_fixture<std::ptrdiff_
   BOOST_REQUIRE( v.amount() == 7 );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_vector_copy_and_compare, vector_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_vector_copy_and_compare, vector_fixture )
 { try {
   decltype(v) v_(v);
   BOOST_TEST_MESSAGE( "v_ :" );
@@ -50,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_vector_copy_and_compare, vector_fixture<std
   BOOST_REQUIRE( !( v != v_ ) );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_vector_assign, vector_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_vector_assign, vector_fixture )
 { try {
   BOOST_TEST_MESSAGE( "assignment v to v1" );
   decltype(v) v_;
@@ -60,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_vector_assign, vector_fixture<std::ptrdiff_
   BOOST_CHECK( v == v_ );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_vector_operations, vector_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_vector_operations, vector_fixture )
 { try {
   BOOST_TEST_MESSAGE( "copying v to v_" );
   decltype(v) v_(v);
@@ -113,7 +110,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_vector_operations, vector_fixture<std::ptrd
   BOOST_CHECK( v_.amount() == 7 );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_vector_push, vector_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_vector_push, vector_fixture )
 { try {
   BOOST_TEST_MESSAGE( "pushing { 1, 1 }" );
   for( std::size_t i(0); i < 2; i++ )
@@ -133,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_vector_push, vector_fixture<std::ptrdiff_t>
   BOOST_CHECK( v.amount() == 8 );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_vector_erase, vector_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_vector_erase, vector_fixture )
 { try {
   BOOST_TEST_MESSAGE( "erasing i = { 0, 3, 6 }" );
   for( std::size_t i(0); i < std::size( v ); i += 3 ) {
@@ -159,35 +156,23 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_vector_erase, vector_fixture<std::ptrdiff_t
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( test_suite_sparse_matrix )
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_create, matrix_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_create, matrix_fixture )
 { try {
   BOOST_TEST_MESSAGE( "checking mtl::sparse::matrix<std::ptrdiff_t> m" );
   BOOST_CHECK( m.frequent() == 2 );
   BOOST_CHECK( m.sparse() );
-  BOOST_CHECK( m.size() == 1 );
-  BOOST_CHECK( m.csize() == 9 );
-  BOOST_CHECK( m.amount() == 7 );
-  BOOST_REQUIRE_NO_THROW( m[0][3] == 4 );
-  BOOST_CHECK_NO_THROW( m[0][2] == 2 );
-} MTL_CATCH }
-
-BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_resize, matrix_fixture<std::ptrdiff_t> )
-{ try {
-  BOOST_TEST_MESSAGE( "resizing m" );
-  BOOST_REQUIRE( m.resize( 3 ) );
-  BOOST_TEST_MESSAGE( m );
   BOOST_CHECK( m.size() == 3 );
   BOOST_CHECK( m.csize() == 3 );
-  BOOST_CHECK( m.amount() == 7 ); //{ 1, 2, 2, 4, 5, 6, 7, 8, 9 }
+  BOOST_CHECK( m.amount() == 7 );
   BOOST_TEST_MESSAGE( m[0][2] );
   BOOST_TEST_MESSAGE( m[1][0] );
   BOOST_REQUIRE_NO_THROW( m[0][2] == 2 );
   BOOST_CHECK_NO_THROW( m[1][0] == 4 );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_copy_and_compare, matrix_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_copy_and_compare, matrix_fixture )
 { try {
-  decltype(m) m_(m);
+  decltype( m ) m_( m );
   BOOST_TEST_MESSAGE( "m_ :" );
   BOOST_TEST_MESSAGE( m_ );
   BOOST_TEST_MESSAGE( "checking m != m_" );
@@ -196,21 +181,19 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_copy_and_compare, matrix_fixture<std
   BOOST_REQUIRE( !( m != m_ ) );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_assign, matrix_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_assign, matrix_fixture )
 { try {
   BOOST_TEST_MESSAGE( "assignment m to m_" );
-  decltype(m) m_;
+  decltype( m ) m_;
   m_ = m;
   BOOST_TEST_MESSAGE( "m_ :" );
   BOOST_TEST_MESSAGE( m_ );
   BOOST_CHECK( m == m_ );
 } MTL_CATCH }
 
-BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_operations, matrix_fixture<std::ptrdiff_t> )
+BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_operations, matrix_fixture )
 { try {
-  auto v( vector_fixture<std::ptrdiff_t>().v );
   BOOST_TEST_MESSAGE( "copying m to m_" );
-  m.resize( 3 );
   decltype( m ) m_( m );
   BOOST_TEST_MESSAGE( "checking m_ *= 1" );
   m_ *= 1;
@@ -219,7 +202,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_operations, matrix_fixture<std::ptrd
   BOOST_CHECK( m == m_ );
   BOOST_CHECK( m_.frequent() == 2 );
   BOOST_CHECK( m_.sparse() );
-  BOOST_CHECK( std::size( m_ ) == 9 );
+  BOOST_CHECK( std::size( m_ ) == 3 );
   BOOST_CHECK( m_.amount() == 7 );
   BOOST_TEST_MESSAGE( "checking m_ /= 1" );
   m_ /= 1;
@@ -228,7 +211,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_operations, matrix_fixture<std::ptrd
   BOOST_CHECK( m == m_ );
   BOOST_CHECK( m_.frequent() == 2 );
   BOOST_CHECK( m_.sparse() );
-  BOOST_CHECK( std::size( m_ ) == 9 );
+  BOOST_CHECK( std::size( m_ ) == 3 );
   BOOST_CHECK( m_.amount() == 7 );
   BOOST_TEST_MESSAGE( "checking m_ /= 0" );
   BOOST_CHECK_THROW( m_ /= 0, mtl::exception_t );
@@ -240,7 +223,7 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_operations, matrix_fixture<std::ptrd
   BOOST_CHECK( m == m_ );
   BOOST_CHECK( m_.frequent() == 2 );
   BOOST_CHECK( m_.sparse() );
-  BOOST_CHECK( std::size( m_ ) == 9 );
+  BOOST_CHECK( std::size( m_ ) == 3 );
   BOOST_CHECK( m_.amount() == 7 );
   BOOST_TEST_MESSAGE( "checking m_ -= empty" );
   m_ -= empty;
@@ -249,17 +232,44 @@ BOOST_FIXTURE_TEST_CASE( test_sparse_matrix_operations, matrix_fixture<std::ptrd
   BOOST_CHECK( m == m_ );
   BOOST_CHECK( m_.frequent() == 2 );
   BOOST_CHECK( m_.sparse() );
-  BOOST_CHECK( std::size( m_ ) == 9 );
+  BOOST_CHECK( std::size( m_ ) == 3 );
   BOOST_CHECK( m_.amount() == 7 );
   BOOST_TEST_MESSAGE( "m_[0] += m[0] :" );
-  m_[0] += static_cast<decltype(v)>( m[0] );
+  m_[0] += m[0];
   BOOST_TEST_MESSAGE( "m_ :" );
   BOOST_TEST_MESSAGE( m_ );
   BOOST_CHECK( m != m_ );
   BOOST_CHECK( m_.frequent() == 2 );
   BOOST_CHECK( m_.sparse() );
-  BOOST_CHECK( std::size( m_ ) == 9 );
+  BOOST_CHECK( std::size( m_ ) == 3 );
   BOOST_CHECK( m_.amount() == 7 );
+  decltype( vector_fixture().v ) v( m[0] );
+  BOOST_TEST_MESSAGE( "m_[0] -= v :" );
+  m_[0] -= v;
+  BOOST_TEST_MESSAGE( "m_ :" );
+  BOOST_TEST_MESSAGE( m_ );
+  BOOST_CHECK( m == m_ );
+  BOOST_CHECK( std::size( m_ ) == 3 );
+  BOOST_TEST_MESSAGE( "m_ = m1*m2 :" );
+  decltype( m ) m1 
+  {   1, 1, 1,
+      1, 1, 1,
+      1, 1, 1   };
+  m1.resize( 3 );
+  BOOST_TEST_MESSAGE( "m1 :" );
+  BOOST_TEST_MESSAGE( m1 );
+  auto m2( m1 );
+  BOOST_TEST_MESSAGE( "m2 :" );
+  BOOST_TEST_MESSAGE( m2 );
+  m_ = m2*m1;
+  BOOST_TEST_MESSAGE( "m_ :" );
+  BOOST_TEST_MESSAGE( m_ );
+  BOOST_TEST_MESSAGE( "m2 *= m1 :" );
+  m2 *= m1;
+  BOOST_TEST_MESSAGE( "m2 :" );
+  BOOST_TEST_MESSAGE( m2 );
+  BOOST_CHECK( m2 == m_ );
+  BOOST_CHECK( std::size( m2 ) == 3 );
 } MTL_CATCH }
 
 BOOST_AUTO_TEST_SUITE_END()

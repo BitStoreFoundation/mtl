@@ -200,7 +200,7 @@ public :
       sparse_vector( insert_vector_t const& other )
       { __assign( other ); }
 
-      explicit sparse_vector( init_list_t list )
+      sparse_vector( init_list_t list )
         : sparse_vector()
       { __assign( list ); }
 
@@ -528,7 +528,6 @@ template<typename _Ty>
 public :
       using type_t           = _Ty;
       using matrix_t         = matrix_t<type_t>;
-      //using add_multiplying<matrix_t, mixing_traits<matrix_t, type_t> >::operator*;
       using container_t      = typename access_traits<matrix_t>::container_t;
       using iterator_t       = typename container_t::iterator_t;
       using const_iterator_t = typename container_t::const_iterator_t;
@@ -540,7 +539,7 @@ private :
 public :
       sparse_matrix() = default;
 
-      explicit sparse_matrix( matrix_t const& other )
+      sparse_matrix( matrix_t const& other )
       { __assign( other ); }
 
       explicit sparse_matrix( std::size_t const& size, std::size_t col_size = 3, std::size_t value = 0 )
@@ -548,12 +547,12 @@ public :
         , container_( size*col_size_, value )
       { }
 
-      explicit sparse_matrix( init_list_t<type_t> list )
+      sparse_matrix( init_list_t<type_t> list )
         : col_size_( std::size( list ) )
         , container_( list )
       { }
 
-      explicit sparse_matrix( init_list_t<insert_vector_t> list )
+      sparse_matrix( init_list_t<insert_vector_t> list )
         : col_size_( std::begin( list )->size() )
         , container_()
       { __assign( list ); }
@@ -673,8 +672,8 @@ private :
         res_m.do_dense();
         MTL_FOREACH( i, size )
         {
-            auto res_v( res_m[i] );
-            const auto lft_v( lft[i] );
+            insert_vector_t res_v( res_m[i] );
+            const insert_vector_t lft_v( lft[i] );
             MTL_FOREACH( j, col_size )
             {
                 auto &val = res_v.find( j )->second;

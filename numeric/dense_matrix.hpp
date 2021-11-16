@@ -100,20 +100,24 @@ template<
       { 
         auto *array = derived_->data();
         _IndexTy index;
-        MTL_FOREACH( i, std::size( accessor_t::container( derived_ ) ) )
+        MTL_FOREACH( i, derived_->size() )
             array[index( derived_, i )] *= value;
         return *derived_; 
       }
 
       _DerivedTy& operator /= ( _Ty const& value )
-      { return *this *= (1.0/value); }
+      {
+        if( value == 0 )
+            throw exception_t( "<dense_vector/=> : value is null" );
+        return *this *= (1.0/value); 
+      }
 
       _DerivedTy& operator += ( typename _TraitsTy::arg_t const& other )
       { 
         auto *array = derived_->data();
         auto const* other_array = other.data();
         _IndexTy index;
-        MTL_FOREACH( i, std::size( accessor_t::container( derived_ ) ) )
+        MTL_FOREACH( i, derived_->size() )
             array[index( derived_, i )] += other_array[i];
         return *derived_; 
       }
@@ -123,7 +127,7 @@ template<
         auto *array = derived_->data();
         auto const* other_array = other.data();
         _IndexTy index;
-        MTL_FOREACH( i, std::size( accessor_t::container( derived_ ) ) )
+        MTL_FOREACH( i, derived_->size() )
             array[index( derived_, i )] -= other_array[i];
         return *derived_; 
       }
@@ -138,7 +142,6 @@ template<
     using add_default_dense_mixing_t = mixing_list
     <
       add_basic_methods<_DerivedTy>,
-      add_iterators<_DerivedTy>,
       add_non_equalable<_OtherTy>,
       add_sum<_DerivedTy, _Traits1>,
       add_difference<_DerivedTy, _Traits1>,
@@ -150,6 +153,7 @@ template<
     typename _DerivedTy,
     typename _Ty>
     using add_dense_insert_vec_mixing_t = mixing_list<
+      add_iterators<_DerivedTy>,
       add_access_by_key<_DerivedTy>,
       add_dense_operations_impl<
         _DerivedTy,
@@ -190,7 +194,11 @@ public :
 private : 
       container_t container_;
 public :
-      dense_vector() = default;
+      dense_vector( type_t val = 0 )
+      {
+        for( auto &elem : container_ )
+            elem = val;
+      }
 
       dense_vector( insert_vector_t const& other )
         : container_( other.container_ )
@@ -212,12 +220,10 @@ public :
       std::size_t size() const noexcept 
       { return size_; }
 
-      auto data() noexcept
-        -> decltype( container_.data() )
+      auto data() noexcept -> decltype( container_.data() )
       { return container_.data(); }
 
-      auto data() const noexcept
-        -> decltype( container_.data() )
+      auto data() const noexcept -> decltype( container_.data() )
       { return container_.data(); }
 
       insert_vector_t& operator = ( insert_vector_t const& other )
@@ -291,7 +297,7 @@ template<
       using insert_vector_t = vector_n_t<_Ty, size_>; 
       using container_t     = typename access_traits<view_vector_t>::container_t;
 
-      container_t container_;
+      container_t &container_;
       const std::size_t i_;
 public :
       dense_vector() = delete;
@@ -304,7 +310,31 @@ public :
       std::size_t index() const
       { return i_; }
 
-      operator vector_n_t<type_t, size_> ()
+      auto begin() -> decltype( std::begin( container_ ) ) 
+      { return std::begin( container_ ) + i_*size_; }
+
+      auto end() -> decltype( std::end( container_ ) ) 
+      { return std::end( container_ ) + (1 + i_)*size_; }
+
+      auto begin() const -> decltype( std::cbegin( container_ ) ) 
+      { return std::cbegin( container_ ) + i_*size_; }
+
+      auto end() const -> decltype( std::cend( container_ ) ) 
+      { return std::cend( container_ ) + (1 + i_)*size_; }
+
+      auto cbegin() const -> decltype( std::cbegin( container_ ) ) 
+      { return std::cbegin( container_ ) + i_*size_; }
+
+      auto cend() const -> decltype( std::cend( container_ ) ) 
+      { return std::cend( container_ ) + (1 + i_)*size_; }
+
+      auto data() noexcept -> decltype( container_.data() )
+      { return container_.data() + i_*size_; }
+
+      auto data() const noexcept -> decltype( container_.data() )
+      { return container_.data() + i_*size_; }
+
+      operator vector_n_t<type_t, size_> () const
       { 
         vector_n_t<type_t, size_> v; 
         MTL_FOREACH( j, size_ )
@@ -335,6 +365,7 @@ template<
     std::size_t size_,
     typename _ViewVecTy = vector_n_t<_Ty, size_, view_t> >
     using add_dense_mtx_mixing_t = mixing_list<
+      add_iterators<_DerivedTy>,
       add_dense_operations_impl<
         _DerivedTy,
         _Ty,
@@ -349,7 +380,7 @@ template<
 template<
     typename _Ty,
     std::size_t col_size_>
-    class matrix final : public add_dense_mtx_mixing_t<matrix_n_t<_Ty, col_size_>, _Ty, col_size_>
+    class dense_matrix final : public add_dense_mtx_mixing_t<matrix_n_t<_Ty, col_size_>, _Ty, col_size_>
     {
       static_assert(
         !std::is_pointer_v<_Ty>,
@@ -369,30 +400,30 @@ template<
 public :
       using type_t           = _Ty;
       using matrix_t         = matrix_n_t<type_t, col_size_>;
-      //using add_multiplying<matrix_t, mixing_traits<matrix_t, type_t> >::operator*;
       using container_t      = typename access_traits<matrix_t>::container_t;
       using iterator_t       = typename container_t::iterator;
       using const_iterator_t = typename container_t::const_iterator;
       using insert_vector_t  = vector_n_t<type_t, col_size_>;
       using view_vector_t    = vector_n_t<type_t, col_size_, view_t>;
+      using add_multiplying<matrix_t, mixing_traits<matrix_t, type_t> >::operator*=;
 private :
       mutable container_t container_;
 public :
-      matrix() = default;
+      dense_matrix() = default;
 
-      matrix( matrix_t const& other )
+      dense_matrix( matrix_t const& other )
         : container_( other.container_ )
       { }
 
-      matrix( matrix_t && other ) noexcept
+      dense_matrix( matrix_t && other ) noexcept
         : container_( std::move( other.container_ ) )
       { }
 
-      explicit matrix( std::size_t size, std::size_t value = 0 )
+      explicit dense_matrix( std::size_t size, std::size_t value = 0 )
         : container_( size*col_size_, value )
       { }
 
-      matrix( init_list_t<type_t> list )
+      dense_matrix( init_list_t<type_t> list )
         : container_( list )
       {
         auto size = std::size( list );
@@ -400,7 +431,7 @@ public :
             throw exception_t( "<dense::matrix::matrix(init_list<_Ty>)> : bad <initializer_list> size" );
       }
 
-      matrix( init_list_t<insert_vector_t> list )
+      dense_matrix( init_list_t<insert_vector_t> list )
         : container_( std::size( list ) )
       { __assign( list ); }
 
@@ -462,11 +493,10 @@ public :
 
       bool operator == ( matrix_t const& other )
       { 
-        if( std::size( container_ ) != std::size( other ) )
+        if( std::size( container_ ) != std::size( other.container_ ) )
             return false;
-        auto *const array = other.data();
         MTL_FOREACH( i, std::size( container_ ) )
-            if( container_[i] != array[i] )
+            if( container_[i] != other.container_[i] )
                 return false;
         return true; 
       }
@@ -546,5 +576,5 @@ private :
         return *this;
       }
     }; // end matrix container
-} } // mtl::numeric
+} // mtl::numeric
 #endif

@@ -31,11 +31,11 @@ template<
 	  {
 		  o << "{ ";
 		  std::ostream_iterator<_Ty> out_itr ( o, " " );
-		  vector<_Ty, size> v = m[i];
+		  vector_n_t<_Ty, size> v = m[i];
 		  std::copy( v.begin(), v.end(), out_itr );
 		  o << "}" << endl;
 	  }
 	  return o;
 	}
-} }
+}
 #endif
