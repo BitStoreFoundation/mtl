@@ -93,10 +93,10 @@ BOOST_AUTO_TEST_CASE( test_math_scale)
   {  10, 15, 1,
      20, 25, 1  };
   BOOST_TEST_MESSAGE( "m :\n" << m );
-  BOOST_TEST_MESSAGE( "testing move  (1) : x0 = 12, y0 = 12, x1 = 52, y1 = 71" );
-  mtl::move( m, 12, 12, 52, 71 );
-  BOOST_TEST_MESSAGE( "testing move  (2) : x0 = 52, y0 = 71" );
-  mtl::move( m, 52, 71 );
+  BOOST_TEST_MESSAGE( "testing scale  (1) : kx = 2, ky = 1" );
+  mtl::scale( m, 2, 1 );
+  BOOST_TEST_MESSAGE( "testing scale  (2) : kx = 0.5, ky = 2" );
+  mtl::scale( m, 0.5, 2 );
 } MTL_CATCH }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -5,8 +5,7 @@
 #define MTL_MATH_HPP
 
 #include "types.hpp"
-#include "dense.hpp"
-#include "sparse.hpp"
+#include "matrix.hpp"
 #include "math_defines.hpp"
 #include "algorithm.hpp"
 
@@ -16,25 +15,26 @@ namespace mtl {
 
 template<typename _Ty>
     detail::optional_t< 
-      mtl::numeric::matrix3_t<std::size_t> 
-    > lee_neumann( mtl::numeric::matrix_t<_Ty> const& map,
+	  mtl::numeric::matrix3_t<std::ptrdiff_t>
+	> lee_neumann( mtl::numeric::matrix_t<_Ty> const& map,
                    std::size_t x_from, std::size_t y_from,
                    std::size_t x_to,   std::size_t y_to,
                    _Ty blank                               )
     {
       if( map.size() <= y_from || map.csize() <= x_from || map.size() <= y_to || map.csize() <= x_to ) {
-          throw detail::exception_t("<mtl::lee_neumann> : out of range");
+		  throw exception_t("<mtl::lee_neumann> : out of range");
       }
       if( map[y_from][x_from] != blank || map[y_to][x_to] != blank ) {
           return MTL_NULLOPT;
       }
 
-      using matrix3_t = mtl::numeric::matrix3_t<std::size_t>;
+	  using matrix3_t = mtl::numeric::matrix3_t<std::ptrdiff_t>;
+	  using vector3_t = mtl::numeric::vector3_t<std::ptrdiff_t>;
 
-      matrix3_t way  = { y_from, x_from, 0 };
-      const int dx[] = { 1, 0, -1,  0 };
-      const int dy[] = { 0, 1,  0, -1 };
-      bool      stop;
+	  matrix3_t            way  = { y_from, x_from, 0 };
+	  const std::ptrdiff_t dx[] = { 1, 0, -1,  0 };
+	  const std::ptrdiff_t dy[] = { 0, 1,  0, -1 };
+	  bool                 stop;
 
       auto wave_propagation = [&map,  &blank,
                                &way,  &stop,
@@ -91,18 +91,18 @@ template<typename _Ty>
                  ( last_v[0]     == curr_v[0] )                                    );
       };
 
-      decltype( way[0] ) last_v( way[y_end] );
+	  vector3_t last_v( way[y_end] );
       d = way[y_end][2] - 1;
       y_end--;
       matrix3_t min_w;
-      min_w.push_back( { x_to, y_to, 1 } );
+	  min_w.push_back( { x_to, y_to, 1 } );
 
       while( d > 0 ) {
           auto l = d;
           for( std::size_t i(y_end); i != 0; i-- )
               if( way[i][2] == d && neighbour(way[i], last_v) ) {
-                  min_w.push_back( { way[i][1], way[i][0], 1 } );
-                  last_v = way[i];
+				  min_w.push_back( { way[i][1], way[i][0], 1 } );
+				  last_v = way[i];
                   d--;
                   break;
               }

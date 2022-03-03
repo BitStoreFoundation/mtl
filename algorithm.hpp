@@ -20,9 +20,9 @@ template<typename _MatrixTy>
     auto min_element( _MatrixTy const& m, std::size_t j ) -> decltype( std::begin( m ) )
     {
       if( m.empty() )
-          throw detail::exception_t("<mtl::min_element> : <matrix> is empty");
+          throw exception_t("<mtl::min_element> : <matrix> is empty");
       if( m.csize() <= j )
-          throw detail::exception_t("<mtl::min_element> : <matrix.csize> <= <j_pos>");
+          throw exception_t("<mtl::min_element> : <matrix.csize> <= <j_pos>");
 
       ++j;
       auto nxt = std::begin( m ) + j;
@@ -39,10 +39,10 @@ template<typename _MatrixTy>
     auto max_element( _MatrixTy const& m, std::size_t j ) -> decltype( std::begin( m ) )
     {
       if( m.empty() )
-          throw detail::exception_t("<mtl::max_element> : <matrix> is empty");
+          throw exception_t("<mtl::max_element> : <matrix> is empty");
 
       if( m.csize() <= j )
-          throw detail::exception_t("<mtl::max_element> : <matrix.csize> <= <j>");
+          throw exception_t("<mtl::max_element> : <matrix.csize> <= <j>");
 
       ++j;
       auto nxt = std::begin( m ) + j;
@@ -58,8 +58,6 @@ template<typename _MatrixTy>
 template<typename _MatrixTy>
     auto minmax_element( _MatrixTy const& m, std::size_t j )
       -> std::pair<decltype(min_element( m, j )), decltype(max_element( m, j ))>
-    {
-      return { min_element( m, j ), max_element( m, j ) };
-    }
+    { return { min_element( m, j ), max_element( m, j ) }; }
 } // mtl
 #endif

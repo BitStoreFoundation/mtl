@@ -176,7 +176,7 @@ public :
       using init_list_t       = std::initializer_list<_Ty> const&;
       using insert_vector_t   = vector_t<type_t>;
       using container_t       = typename access_traits<insert_vector_t>::container_t;
-      using iterator_t        = typename container_t::iterator;
+	  using iterator_t        = typename container_t::iterator;
       using const_iterator_t  = typename container_t::const_iterator;
 private :
       bool        is_sparse_;
@@ -220,7 +220,7 @@ public :
       { return container_.find( i ); }
 
       const_iterator_t find( std::size_t i ) const
-      { return container_.find( i ); }
+	  { return container_.find( i ); }
 
       insert_vector_t& do_sparse()
       {
@@ -430,35 +430,24 @@ template<
       using type_t          = _Ty;
       using view_vector_t   = vector_t<type_t, view_t>;
       using insert_vector_t = vector_t<type_t>;
-      using container_t     = typename access_traits<view_vector_t>::container_t;
+	  using container_t     = typename access_traits<view_vector_t>::container_t;
       
-      container_t &container_; 
+	  container_t &container_;
       const std::size_t i_;
       const std::size_t size_;
 public :
       sparse_vector() = delete;
-      sparse_vector(view_vector_t const&) = delete;
-      view_vector_t& operator = (view_vector_t const&) = delete;
+	  sparse_vector(view_vector_t const&) = default;
+	  view_vector_t& operator = (view_vector_t const&) = delete;
 
-      auto begin() -> decltype( std::begin( container_ ) ) 
-      { return std::begin( container_ ) + i_*size_; }
+	  auto find( std::size_t j ) -> decltype( std::end( container_ ) )
+	  { return container_.find( i_*size_ + j ); }
 
-      auto end() -> decltype( std::end( container_ ) ) 
-      { return std::end( container_ ) + (1 + i_)*size_; }
+	  auto find( std::size_t j ) const -> decltype( std::cend( container_ ) )
+	  { return container_.find( i_*size_ + j ); }
 
-      auto begin() const -> decltype( std::cbegin( container_ ) ) 
-      { return std::cbegin( container_ ) + i_*size_; }
 
-      auto end() const -> decltype( std::cend( container_ ) ) 
-      { return std::cend( container_ ) + (1 + i_)*size_; }
-
-      auto cbegin() const -> decltype( std::cbegin( container_ ) ) 
-      { return std::cbegin( container_ ) + i_*size_; }
-
-      auto cend() const -> decltype( std::cend( container_ ) ) 
-      { return std::cend( container_ ) + (1 + i_)*size_; }
-
-      std::size_t size() const noexcept
+	  std::size_t size() const noexcept
       { return size_; }
 
       std::size_t index() const
@@ -482,7 +471,7 @@ public :
       bool operator == ( insert_vector_t const& other )
       {
         MTL_FOREACH( j, std::size( container_ ) )
-            if( container_[i_*size_ + j] != other[j] )
+			if( container_[i_*size_ + j] != other[j] )
                 return false;
         return true; 
       }
@@ -656,32 +645,32 @@ public :
       };
 
       const view_vector_t operator [] ( std::size_t const& i ) const
-      { 
+	  {
         if( i >= size() ) throw exception_t( "<sparse_matrix[]const> : bad access" );
         return view_vector_t( *this, col_size_, i ); 
       };
 private :
-      matrix_t __multiply( matrix_t const& rht )
+	  matrix_t __multiply( matrix_t const& rht )
       {
-        if( col_size_ != std::size( rht ) )
+		if( col_size_ != std::size( rht ) )
             throw exception_t( "<sparse_matrix::__multiply> : col1 != row2" );
         auto &lft = *this;
         auto size = this->size();
         auto col_size = rht.csize();
-        mtl::numeric::matrix_t<type_t> res_m( size, col_size );
-        res_m.do_dense();
+		matrix_t res_m( size, col_size_ );
+		res_m.do_dense();
         MTL_FOREACH( i, size )
         {
-            insert_vector_t res_v( res_m[i] );
-            const insert_vector_t lft_v( lft[i] );
+			view_vector_t res_v( res_m[i] );
+			const insert_vector_t lft_v( lft[i] );
             MTL_FOREACH( j, col_size )
-            {
-                auto &val = res_v.find( j )->second;
-                MTL_FOREACH( k, col_size_ )
-                    val += lft_v[k]*rht[k][j];
-            }
-        }
-        return res_m.do_sparse();
+			{
+				auto itr = res_v.find( j );
+				MTL_FOREACH( k, col_size_ )
+					itr->second += lft_v[k]*rht[k][j];
+			}
+		}
+		return res_m.do_sparse();
       }
 
       matrix_t& __assign( matrix_t const& other ) 

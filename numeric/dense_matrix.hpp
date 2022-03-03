@@ -208,7 +208,7 @@ public :
         : container_( std::move( other.container_ ) )
       { }
 
-      explicit dense_vector( init_list_t list )
+      dense_vector( init_list_t list )
       {
         if( size_ < std::size( list ) )
             throw exception_t( "<dense_vector> : bad initializer_list <size>" );

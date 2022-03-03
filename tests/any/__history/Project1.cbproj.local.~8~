@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.695,C:\Users\Butan84\Documents\Embarcadero\Studio\Projects\Project1PCH1.h=C:\Program Files (x86)\Embarcadero\Studio\21.0\include\mtl\tests\any\Project1PCH1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.335,=C:\Users\Butan84\Documents\Embarcadero\Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.190,C:\Users\Butan84\Documents\Embarcadero\Studio\Projects\Project1.cbproj=C:\Program Files (x86)\Embarcadero\Studio\21.0\include\mtl\tests\any\Project1.cbproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.636,=C:\Users\Butan84\Documents\Embarcadero\Studio\Projects\File1.cpp</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.050,C:\Users\Butan84\Documents\Embarcadero\Studio\Projects\File1.cpp=C:\Program Files (x86)\Embarcadero\Studio\21.0\include\mtl\tests\any\debug.cpp</Transaction>
+  </Transactions>
+</BorlandProject>

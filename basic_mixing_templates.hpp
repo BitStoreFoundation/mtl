@@ -6,13 +6,13 @@
 #include "exception.hpp"
 #include "type_traits.hpp"
 // macro for declare reference to the derived class
-#define MTL_DECL_PRIV_PTR_TO_THE_DERIVED_CLASS_AND_PUB_DEF_CONSTR(class_name, derived_type) \
+#define MTL_DECL_PRIV_PTR_TO_THE_DERIVED_CLASS_AND_PUB_DEF_CONSTR(struct_name, derived_type) \
 private : \
     derived_type *derived_; \
 public : \
-    class_name() \
+    struct_name() \
       : derived_( static_cast<derived_type*>( this ) ) \
-    { }
+  { }
 
 namespace mtl {
 // helpers
@@ -137,7 +137,7 @@ template<
       { return accessor_t::container( derived_ ).begin(); }
 
       auto end()
-        -> decltype( accessor_t::container( derived_ ).end() ) 
+      -> decltype( accessor_t::container( derived_ ).end() )
       { return accessor_t::container( derived_ ).end(); }
 
       auto begin() const
@@ -163,6 +163,10 @@ template<
       using accessor_t = typename _TraitsTy::accessor_t;
       // declare derived_ and add_iterators() = default
       MTL_DECL_PRIV_PTR_TO_THE_DERIVED_CLASS_AND_PUB_DEF_CONSTR( add_iterators, _DerivedTy )
+
+      auto end()
+        -> decltype( accessor_t::container( derived_ ).end() )
+      { return accessor_t::container( derived_ ).end(); }
 
       auto begin() const
         -> decltype( accessor_t::container( derived_ ).cbegin() ) 

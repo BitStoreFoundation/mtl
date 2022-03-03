@@ -1,13 +1,12 @@
 #pragma once
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#ifndef MTL_TYPES_HPP
+#define MTL_TYPES_HPP
 
-#define MTL_PASTE_DETAIL \
+#define MTL_PASTE_DETAIL(namespace) \
+template<typename ... _ArgsTy> \
+    using variant_t  = namespace::variant<_ArgsTy...>; \
 template<typename _Ty> \
-	using variant_t  = std::variant<_Ty>; \
-template<typename _Ty> \
-    using optional_t = std::optional<_Ty>; \
-} }
+    using optional_t = namespace::optional<_Ty>;
 
 #ifdef __BORLANDC__ 
 // C++ Builder ver <= 10.4
@@ -17,35 +16,28 @@ template<typename _Ty> \
 
 # include <boost/variant.hpp>
 # include <boost/optional.hpp>
-
 # define MTL_NULLOPT boost::none
-namespace mtl { namespace detail {
-template<typename _Ty>
-    using variant_t  = boost::variant<_Ty>;
-template<typename _Ty>
-    using optional_t = boost::optional<_Ty>; 
-} }
+namespace mtl::detail {
+    MTL_PASTE_DETAIL(boost)
+}
 // any version
 # else
 
 # include <variant>
 # include <optional>
-
 # define MTL_NULLOPT std::nullopt
-namespace mtl { namespace detail {
-MTL_PASTE_DETAIL
-} }
+namespace mtl::detail {
+    MTL_PASTE_DETAIL(std)
+}
 # endif
 // any ide
 #else
-
 #define MTL_NULLOPT std::nullopt
 // paste types
-namespace mtl { namespace detail {
-MTL_PASTE_DETAIL
-} }
+namespace mtl::detail {
+    MTL_PASTE_DETAIL(std)
+}
 #endif
 // delete macro
 #undef MTL_PASTE_DETAIL
-
 #endif

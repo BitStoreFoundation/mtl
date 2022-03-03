@@ -1,0 +1,17 @@
+﻿#include <iostream>
+#include <mtl/numeric/sparse_matrix.hpp>
+
+int main()
+{ try {
+	  using matrix_t = mtl::numeric::matrix_t<std::ptrdiff_t>;
+	  matrix_t m
+	  { 0, 1, 2, 3, 4, 0, 0, 1, 2 };
+	  m.resize( 3 );
+	  decltype( m ) m_( m );
+	  m_[0] += static_cast<typename matrix_t::insert_vector_t>( m[0] );
+  } catch( std::exception const& e ) {
+	  std::cout << e.what() << std::endl;
+  }
+  system( "pause" );
+  return 0;
+}

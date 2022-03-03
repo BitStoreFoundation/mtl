@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef MTL_ABSTRACT_FACTORY_HPP
 #define MTL_ABSTRACT_FACTORY_HPP
 
@@ -17,7 +17,7 @@ template<
     {
 public :
       using key_t       = _KeyTy;
-      using var_t       = detail::variant_t<std::shared_ptr<_ArgsTy> ... >;
+	  using var_t       = detail::variant_t<std::shared_ptr<_ArgsTy> ... >;
       using o_var_t     = detail::optional_t<var_t>;
       using creator_t   = std::function<var_t()>;
       using creators_t  = std::unordered_map<key_t, creator_t>;
@@ -38,10 +38,10 @@ public :
       void register_class( key_t const& by_key, creator_t const& creator ) 
       {
         if( !creator ) {
-            throw detail::exception_t( "<abstract_factory::register_class> : <creator> is empty wrap of functional object" );
+			throw exception_t( "<abstract_factory::register_class> : <creator> is empty wrap of functional object" );
         }
         if( creators_.find( by_key ) != creators_.end() ) {
-            throw detail::exception_t( "<abstract_factory::register_class> : <by_key> already exsist" );
+			throw exception_t( "<abstract_factory::register_class> : <by_key> already exsist" );
         }
         creators_[by_key] = creator;
       }
@@ -50,21 +50,21 @@ public :
       void register_class( key_t const& by_key ) 
       {
         if( creators_.find( by_key ) != creators_.end() ) {
-            throw detail::exception_t( "<abstract_factory::register_class> : <by_key> already exsist" );
+            throw exception_t( "<abstract_factory::register_class> : <by_key> already exsist" );
         }
-        creators_[by_key] = &creator<_ObjTy>;
+		creators_[by_key] = &creator<_ObjTy>;
       }
 
-      o_var_t creat( key_t const& by_key ) 
+      o_var_t create( key_t const& by_key )
       {
-        auto it = creators_.find( by_key );
-        return it != creators_.end() ? it->second() : MTL_NULLOPT;
+		auto it = creators_.find( by_key );
+		return it != creators_.end() ? o_var_t( it->second() ) : MTL_NULLOPT;
       }
 private :
 
   template<class _ObjTy>
-      static var_t creator() 
-      { return std::make_shared<_ObjTy>(); } 
+	  static var_t creator()
+	  { return var_t( std::make_shared<_ObjTy>() ); }
     };
 } // mtl
 #endif

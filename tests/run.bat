@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Embarcadero\Studio\21.0\include\mtl\tests\Win32\Release\tests.exe" --log_level=all
