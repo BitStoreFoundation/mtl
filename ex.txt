@@ -1,1 +1,0 @@
-set( SOURCE_EXE tests/test_math.cpp )
